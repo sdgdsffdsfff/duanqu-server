@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.manager.dao.TagMapper">
+
+
+	<insert id="insertOtherTag" parameterType="OtherTagModel">
+		insert into tab_editor_othertag(tag_type,tag_text)
+		values(#{tagType},#{tagText})
+	</insert>
+
+	<update id="updateOtherTag" parameterType="OtherTagModel">
+		update tab_editor_othertag set tag_text=#{tagText} where
+		tag_type=#{tagType}
+	</update>
+
+	<select id="selectOtherTagModel" parameterType="int"
+		resultType="OtherTagModel">
+		select id,tag_text tagText,tag_type tagType from
+		tab_editor_othertag where tag_type=#{tagType}
+	</select>
+
+	<select id="getTagModel" parameterType="TagModel"
+		resultType="TagModel">
+		select tid,tag_text tagText,tag_type tagType from tab_tag_info
+		where tid=#{tid}
+	</select>
+
+	<insert id="insertTagModel" parameterType="TagModel"
+		useGeneratedKeys="true" keyProperty="tid">
+		insert into tab_tag_info(tid,tag_text,tag_type)
+		values(#{tid},#{tagText},#{tagType})
+	</insert>
+
+
+	<update id="updateTagModel" parameterType="TagModel">
+		update tab_tag_info set tag_text=#{tagText} where tid=#{tid}
+	</update>
+
+	<insert id="insertContentTag" parameterType="ContentTagModel">
+		insert into tab_content_tag(tid,cid) values(#{tid},#{cid})
+	</insert>
+
+	<delete id="deleteContentTag" parameterType="ContentTagModel">
+		delete from tab_content_tag where tid=#{tid} and cid=#{cid}
+	</delete>
+
+	<select id="queryTagList"
+		parameterType="com.duanqu.common.submit.MTagSubmit"
+		resultType="Map">
+		select a.tag_text,b.* from tab_tag_info a,(select m.tid,count(*)
+		zs from tab_content_tag m,tab_content_info n where m.cid=n.cid
+		and n.c_status in (0,3,4) group by m.tid ) b where a.tid=b.tid
+		<if test="tagText != null and '' != tagText">
+			<![CDATA[   
+              AND a.tag_text  like '%${tagText}%'    
+           ]]>
+		</if>
+		order by b.zs desc limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryTagListCount"
+		parameterType="com.duanqu.common.submit.MTagSubmit"
+		resultType="Long">
+		select count(*) from tab_tag_info a where 1=1
+		<if test="tagText != null and '' != tagText">
+			<![CDATA[   
+              AND a.tag_text  like '%${tagText}%'    
+           ]]>
+		</if>
+	</select>
+
+	<select id="queryTagHotList"
+		parameterType="com.duanqu.common.submit.MTagSubmit"
+		resultType="Map">
+		SELECT
+		a.tid,FROM_UNIXTIME(SUBSTR(a.create_time,1,LENGTH(a.create_time)-3))
+		createTime,b.tag_text from tab_tag_hot a,tab_tag_info b where
+		a.tid=b.tid and a.tag_type=1
+		<if test="tagText != null and '' != tagText">
+			<![CDATA[   
+              AND b.tag_text  like '%${tagText}%'    
+           ]]>
+		</if>
+		order by a.create_time desc limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryTagHotListCount"
+		parameterType="com.duanqu.common.submit.MTagSubmit"
+		resultType="Long">
+		select count(*) from tab_tag_hot a,tab_tag_info b where
+		a.tid=b.tid and a.tag_type=1
+		<if test="tagText != null and '' != tagText">
+			<![CDATA[   
+              AND b.tag_text  like '%${tagText}%'    
+           ]]>
+		</if>
+	</select>
+
+	<select id="queryTagHotImageList"
+		parameterType="com.duanqu.common.submit.MTagSubmit"
+		resultType="Map">
+		SELECT
+		a.tid,FROM_UNIXTIME(SUBSTR(a.create_time,1,LENGTH(a.create_time)-3))
+		createTime,a.image_url,a.order_num,b.tag_text from tab_tag_hot
+		a,tab_tag_info b where a.tid=b.tid and a.tag_type=2
+		<if test="tagText != null and '' != tagText">
+			<![CDATA[   
+              AND b.tag_text  like '%${tagText}%'    
+           ]]>
+		</if>
+		order by a.create_time desc limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryTagHotImageListCount"
+		parameterType="com.duanqu.common.submit.MTagSubmit"
+		resultType="Long">
+		select count(*) from tab_tag_hot a,tab_tag_info b where
+		a.tid=b.tid and a.tag_type=2
+		<if test="tagText != null and '' != tagText">
+			<![CDATA[   
+              AND b.tag_text  like '%${tagText}%'    
+           ]]>
+		</if>
+	</select>
+
+
+	<insert id="insertTagHot" parameterType="TagHotModel">
+		insert into tab_tag_hot(tid,tag_type,create_time)
+		values(#{tid},#{tagType},#{createTime})
+	</insert>
+
+	<delete id="deleteTagHot" parameterType="TagHotModel">
+		delete from tab_tag_hot where tid=#{tid} and tag_type=#{tagType}
+	</delete>
+
+	<select id="getTagHot" parameterType="Long"
+		resultType="TagHotModel">
+		select tid,create_time createTime from tab_tag_hot where
+		tid=#{tid}
+	</select>
+
+	<update id="updateTagHot" parameterType="TagHotModel">
+		update tab_tag_hot set create_time=#{createTime} where
+		tid=#{tid}
+	</update>
+
+	<select id="queryEditorTagList" resultType="Map">
+		select a.tid,b.tag_text from tab_tag_hot a,tab_tag_info b where
+		a.tid=b.tid and a.tag_type=1 order by a.create_time desc
+	</select>
+
+	<insert id="insertTagHotImage" parameterType="TagHotModel">
+		insert into tab_tag_hot(tid,image_url,tag_type,create_time)
+		values(#{tid},#{imageUrl},#{tagType},#{createTime})
+	</insert>
+
+	<update id="updateTagOrderNum" parameterType="TagHotModel">
+		update tab_tag_hot set order_num=#{orderNum} where tag_type=2
+		and tid=#{tid}
+	</update>
+
+	<select id="queryTagHotModels" resultType="TagHotModel">
+		select a.image_url imageUrl,b.tag_text tagText from tab_tag_hot
+		a,tab_tag_info b where a.tid=b.tid and a.tag_type=2 order by
+		a.order_num asc,a.tid asc
+	</select>
+
+
+
+
+
+
+
+</mapper>
+
+

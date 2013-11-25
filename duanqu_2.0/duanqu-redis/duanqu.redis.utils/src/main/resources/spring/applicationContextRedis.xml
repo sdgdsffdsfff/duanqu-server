@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:redis="http://www.springframework.org/schema/redis"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd        
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/tx 
+     http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+     http://www.springframework.org/schema/redis 
+     http://www.springframework.org/schema/redis/spring-redis.xsd">
+
+
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		<property name="maxActive" value="${redis.maxActive}" />
+		<property name="maxWait" value="${redis.maxWait}" />
+	</bean>
+
+	<!-- 内容模版 -->
+	<bean id="contentJedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.password}" /> -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="usePool" value="${redis.usePool}" />
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="database" value="${redis.content.db}" />
+	</bean>
+
+
+	<bean id="contentRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="contentJedisConnectionFactory">
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+	<!-- 用户 -->
+	<bean id="userJedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.password}" /> -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="usePool" value="${redis.usePool}" />
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="database" value="${redis.user.db}" />
+	</bean>
+	<bean id="userRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="userJedisConnectionFactory">
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+	<!-- 关系模版 -->
+	<bean id="relationJedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.password}" /> -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="usePool" value="${redis.usePool}" />
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="database" value="${redis.relation.db}" />
+	</bean>
+	<bean id="relationRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="relationJedisConnectionFactory">
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+	<!-- 报表 -->
+	<bean id="reportJedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.password}" /> -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="usePool" value="${redis.usePool}" />
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="database" value="${redis.report.db}" />
+	</bean>
+	<bean id="reportRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="reportJedisConnectionFactory">
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+	<!-- 消息队列 -->
+	<bean id="jmsJedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.password}" /> -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="usePool" value="${redis.usePool}" />
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="database" value="${redis.jms.db}" />
+	</bean>
+	<bean id="jmsRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="jmsJedisConnectionFactory">
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+	<!-- 用户关系 -->
+	<bean id="userRelationJedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.password}" /> -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="usePool" value="${redis.usePool}" />
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="database" value="${redis.user.relation.db}" />
+	</bean>
+	<bean id="userRelationRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="userRelationJedisConnectionFactory">
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+	<!-- 评论 -->
+	<bean id="commentJedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.password}" /> -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="usePool" value="${redis.usePool}" />
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="database" value="${redis.comment.db}" />
+	</bean>
+	<bean id="commentRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="commentJedisConnectionFactory">
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+	<!-- 私信消息 -->
+	<bean id="messageJedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.password}" /> -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="usePool" value="${redis.usePool}" />
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="database" value="${redis.message.db}" />
+	</bean>
+	<bean id="messageRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="messageJedisConnectionFactory">
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+	<!-- 第三方平台用户信息 -->
+	<!-- 内容模版 -->
+	<bean id="openUserJedisConnectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}" />
+		<property name="port" value="${redis.port}" />
+		<!-- <property name="password" value="${redis.password}" /> -->
+		<property name="timeout" value="${redis.timeout}" />
+		<property name="usePool" value="${redis.usePool}" />
+		<property name="poolConfig" ref="poolConfig" />
+		<property name="database" value="${redis.openuser.db}" />
+	</bean>
+
+
+	<bean id="openUserRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="openUserJedisConnectionFactory">
+		<property name="keySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="valueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashKeySerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+		<property name="hashValueSerializer">
+			<bean
+				class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+		</property>
+	</bean>
+
+
+	<bean id="baseService" class="com.duanqu.redis.service.BaseRedisService"
+		abstract="true">
+		<property name="contentTemplate" ref="contentRedisTemplate" />
+		<property name="userTemplate" ref="userRedisTemplate" />
+		<property name="relationTemplate" ref="relationRedisTemplate" />
+		<property name="reportTemplate" ref="reportRedisTemplate" />
+		<property name="jmsTemplate" ref="jmsRedisTemplate" />
+		<property name="userRelationTemplate" ref="userRelationRedisTemplate" />
+		<property name="commentTemplate" ref="commentRedisTemplate" />
+		<property name="messageTemplate" ref="messageRedisTemplate" />
+		<property name="openUserTemplate" ref="openUserRedisTemplate" />
+	</bean>
+
+
+	<bean id="redisUserService" class="com.duanqu.redis.service.user.RedisUserServiceImpl"
+		parent="baseService" />
+
+	<bean id="redisContentService"
+		class="com.duanqu.redis.service.content.RedisContentServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisRelationshipService">
+			<ref bean="redisRelationshipService" />
+		</property>
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+		<property name="redisTimelineService">
+			<ref bean="redisTimelineService" />
+		</property>
+
+	</bean>
+
+	<bean id="redisTimelineService"
+		class="com.duanqu.redis.service.timeline.RedisTimelineServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+		<property name="redisRelationshipService">
+			<ref bean="redisRelationshipService" />
+		</property>
+	</bean>
+
+	<bean id="redisJMSMessageService" class="com.duanqu.redis.service.jms.RedisJMSMessageServiceImpl"
+		parent="baseService" />
+
+	<bean id="redisGroupService" class="com.duanqu.redis.service.group.RedisGroupServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+	</bean>
+
+	<bean id="redisCommentService"
+		class="com.duanqu.redis.service.comment.RedisCommentServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+	</bean>
+
+	<bean id="redisHotService" class="com.duanqu.redis.service.hot.RedisHotServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisRelationshipService">
+			<ref bean="redisRelationshipService" />
+		</property>
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+		<property name="redisTimelineService">
+			<ref bean="redisTimelineService" />
+		</property>
+		<property name="redisHotService">
+			<ref bean="redisHotService"/>
+		</property>
+	</bean>
+
+	<bean id="redisMessageService"
+		class="com.duanqu.redis.service.message.RedisMessageServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+		<property name="redisCommentService">
+			<ref bean="redisCommentService" />
+		</property>
+		<property name="redisTimelineService">
+			<ref bean="redisTimelineService" />
+		</property>
+	</bean>
+
+	<bean id="redisRelationshipService"
+		class="com.duanqu.redis.service.user.RedisRelationshipServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="indexBuilder">
+			<ref bean="indexBuilder" />
+		</property>
+	</bean>
+
+	<bean id="redisReportService" class="com.duanqu.redis.service.report.RedisReportServiceImpl"
+		parent="baseService" />
+	
+	<!-- 资源下载 -->
+	<bean id="redisResourceService" class="com.duanqu.redis.service.resource.RedisResourceServiceImpl"
+		parent="baseService" />
+
+	<!-- 测试 -->
+	<bean id="redisTestService" class="com.duanqu.redis.service.RedisTestServiceImpl"
+		parent="baseService" />
+
+
+
+
+
+	<!-- <bean id="suggestSearcher" class="com.duanqu.redis.service.search.SuggestSearcher" 
+		parent="baseService" /> -->
+	<bean id="searcher" class="com.duanqu.redis.service.search.SearcherImpl"
+		parent="baseService">
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisTimelineService">
+			<ref bean="redisTimelineService" />
+		</property>
+	</bean>
+
+	<!-- 消息通知 -->
+	<bean id="DuanquNotice" class="org.springframework.data.redis.listener.ChannelTopic">
+		<constructor-arg name="name">
+			<value>duanqu-notice</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="duanquPublisher" class="com.duanqu.redis.pubsub.DuanquRedisPublisherImpl"
+		parent="baseService">
+		<property name="topic" ref="DuanquNotice" />
+	</bean>
+
+	<!-- 压缩消息通知 -->
+
+	<bean id="compressNotice" class="org.springframework.data.redis.listener.ChannelTopic">
+		<constructor-arg name="name">
+			<value>duanqu-compress</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="compressPublisher" class="com.duanqu.redis.pubsub.DuanquRedisPublisherImpl"
+		parent="baseService">
+		<property name="topic" ref="compressNotice" />
+	</bean>
+
+	<!-- 数据同步Bean -->
+
+	<bean id="contentSynService"
+		class="com.duanqu.redis.service.syn.content.ContentSynServiceImpl"
+		parent="baseService">
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+		<property name="redisTimelineService">
+			<ref bean="redisTimelineService" />
+		</property>
+		<property name="redisRelationshipService">
+			<ref bean="redisRelationshipService" />
+		</property>
+		<property name="indexBuilder">
+			<ref bean="indexBuilder" />
+		</property>
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisMessageService">
+			<ref bean="redisMessageService" />
+		</property>
+		<property name="redisJMSMessageService">
+			<ref bean="redisJMSMessageService" />
+		</property>
+		<property name="duanquPublisher">
+			<ref bean="duanquPublisher" />
+		</property>
+		
+	</bean>
+
+	<bean id="userSynService" class="com.duanqu.redis.service.syn.user.UserSynServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="indexBuilder">
+			<ref bean="indexBuilder" />
+		</property>
+		<property name="redisRelationshipService">
+			<ref bean="redisRelationshipService" />
+		</property>
+	</bean>
+
+	<bean id="messageSynService"
+		class="com.duanqu.redis.service.syn.message.MessageSynServiceImpl"
+		parent="baseService">
+		<property name="redisMessageService">
+			<ref bean="redisMessageService" />
+		</property>
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+	</bean>
+
+
+	<bean id="commentSynService"
+		class="com.duanqu.redis.service.syn.comment.CommentSynServiceImpl"
+		parent="baseService">
+		<property name="redisMessageService">
+			<ref bean="redisMessageService" />
+		</property>
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+		<property name="redisCommentService">
+			<ref bean="redisCommentService" />
+		</property>
+	</bean>
+
+	<bean id="systemSynService"
+		class="com.duanqu.redis.service.syn.system.SystemSynServiceImpl"
+		parent="baseService" />
+
+	<bean id="badwordService" class="com.duanqu.redis.service.badword.BadwordServiceImpl"
+		parent="baseService" />
+
+<!-- 
+	<bean id="rabbitConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="localhost" />
+		<property name="username" value="guest" />
+		<property name="password" value="guest" />
+	</bean>
+
+	<bean id="connectionFactory"
+		class="org.springframework.amqp.rabbit.connection.SingleConnectionFactory">
+		<constructor-arg value="rabbitConnectionFactory" />
+	</bean>
+	<bean id="amqpAdmin" class="org.springframework.amqp.rabbit.core.RabbitAdmin">
+		<constructor-arg ref="connectionFactory" />
+	</bean>
+	<bean id="rabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+		<constructor-arg ref="connectionFactory"></constructor-arg>
+	</bean>
+	<bean id="messageProducer" class="com.duanqu.redis.pubsub.MessageProducer">
+		<property name="rabbitTemplate">
+			<ref bean="rabbitTemplate" />
+		</property>
+	</bean>
+ -->
+</beans>

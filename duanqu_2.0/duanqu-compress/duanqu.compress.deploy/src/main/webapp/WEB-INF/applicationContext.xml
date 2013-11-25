@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="GB2312"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:lang="http://www.springframework.org/schema/lang"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"
+	default-autowire="byName">
+	
+	<bean id="videoCompressService" class="com.duanqu.compress.service.VideoCompressServiceImpl" parent="baseService">
+		
+	</bean>
+	
+	<bean id="compressMessageConsumer"
+		class="org.springframework.data.redis.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.duanqu.compress.service.MessageConsumerImpl" >
+				<property name="videoCompressService">
+					<ref bean="videoCompressService"/>
+				</property>
+			</bean>
+		</constructor-arg>
+	</bean>
+	<!-- -->
+	<bean id="compressRedisContainer"
+		class="org.springframework.data.redis.listener.RedisMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsJedisConnectionFactory" />
+		<property name="messageListeners">
+			<map>
+				<entry key-ref="compressMessageConsumer">
+					<bean class="org.springframework.data.redis.listener.ChannelTopic">
+						<constructor-arg value="duanqu-compress" />
+					</bean>
+				</entry>
+				<entry key-ref="compressMessageConsumer">
+					<bean class="org.springframework.data.redis.listener.ChannelTopic">
+						<constructor-arg value="duanqu-notice" />
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+ 
+	<import resource="classpath:spring/applicationContextRedis.xml" />
+	<import resource="classpath:spring/common-applicationContext.xml" />
+</beans>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.manager.dao.FilterWordMapper">
+
+	<select id="queryFilterWordModels" parameterType="com.duanqu.common.submit.MFilterWordSubmit"
+		resultType="FilterWordModel">
+		<include refid="filterWordList" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryFilterWordModelsCount" parameterType="com.duanqu.common.submit.MFilterWordSubmit"
+		resultType="long">
+		select count(*) from(
+		<include refid="filterWordList" />
+		) h
+	</select>
+	
+	<sql id="filterWordList">
+	select id,filter_text filterText from tab_sys_filterword
+	</sql>
+	
+	<insert id="insertFilterWordModel" parameterType="FilterWordModel">
+	insert into tab_sys_filterword (filter_text) values(#{filterText})
+	</insert>
+	
+	<delete id="deleteFilterWordModel" parameterType="int">
+	delete from tab_sys_filterword where id=#{id}
+	</delete>
+	
+	<select id="getFilterWordModel" parameterType="int" resultType="FilterWordModel">
+	select id,filter_text filterText from tab_sys_filterword where id=#{id}
+	</select>
+
+    
+
+</mapper>
+
+

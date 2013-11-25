@@ -1,0 +1,1067 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd        
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- Configure spring to give a hook to axis2 without a ServletContext -->
+
+
+
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+
+				<!-- 本地环境 <value>classpath:dataSource_local.properties</value> <value>classpath:redis_local.properties</value> 
+					<value>classpath:duanquconfig_local.properties</value> -->
+
+				<!-- 测试 -->
+				<value>classpath:dataSource_test.properties</value>
+				<value>classpath:redis_test.properties</value>
+				<value>classpath:duanquconfig_test.properties</value>
+				
+				<!--
+					阿里云 
+					<value>classpath:dataSource.properties</value>
+					<value>classpath:redis.properties</value>
+					<value>classpath:duanquconfig.properties</value>
+				-->
+				<!--
+					压测 208 <value>classpath:dataSource_208.properties</value>
+					<value>classpath:redis_208.properties</value>
+					<value>classpath:duanquconfig_208.properties</value>
+				-->
+
+				
+				<!-- 淘宝 <value>classpath:dataSource_taobao.properties</value> <value>classpath:redis_taobao.properties</value> 
+
+					<value>classpath:duanquconfig_208.properties</value> <value>classpath:activemq_test.properties</value> 
+			    -->
+
+
+			</list>
+		</property>
+	</bean>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="url">
+			<value>${jdbc.url}</value>
+		</property>
+		<property name="driverClassName">
+			<value>${jdbc.driver}</value>
+		</property>
+		<property name="username">
+			<value>${jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.password}</value>
+		</property>
+		<property name="initialSize">
+			<value>${jdbc.initialSize}</value>
+		</property>
+		<property name="maxIdle">
+			<value>${jdbc.maxIdle}</value>
+		</property>
+		<property name="minIdle">
+			<value>${jdbc.minIdle}</value>
+		</property>
+		<property name="maxActive">
+			<value>${jdbc.maxActive}</value>
+		</property>
+
+		<!-- 是否自动回收超时连接 -->
+		<property name="removeAbandoned">
+			<value>true</value>
+		</property>
+		<!-- 超时没有使用的活动连接,清理后并没有放回连接池(以秒数为单位) -->
+		<property name="removeAbandonedTimeout">
+			<value>180</value>
+		</property>
+		<property name="logAbandoned">
+			<value>true</value>
+		</property>
+		<property name="maxWait">
+			<value>${jdbc.maxWait}</value>
+		</property>
+		<!-- 空闲时是否验证, 若不通过断掉连接, 前提是空闲对象回收器开启状态 -->
+		<property name="testWhileIdle">
+			<value>true</value>
+		</property>
+		<!-- 在空闲连接回收器线程运行期间休眠的时间值,以毫秒为单位. 如果设置为非正数,则不运行空闲连接回收器线程 -->
+		<property name="timeBetweenEvictionRunsMillis">
+			<value>${jdbc.timeBetweenEvictionRunsMillis}</value>
+		</property>
+		<property name="validationQuery" value="select 1" />
+	</bean>
+
+	<bean id="sqlSessionFactoryCommon" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="typeAliasesPackage" value="com.duanqu.common.model" />
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"> <property 
+		name="basePackage" value="com.danqoo.maper" /> </bean> -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+	</bean>
+
+	<bean id="transactionInterceptor"
+		class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="insert*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="followEachOther">PROPAGATION_NOT_SUPPORTED</prop>
+				<prop key="update*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="delete*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="edit*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="save*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="add*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="apply*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="attach*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="change*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="find*">PROPAGATION_NOT_SUPPORTED,readOnly</prop>
+				<prop key="get*">PROPAGATION_NOT_SUPPORTED,readOnly</prop>
+				<prop key="load*">PROPAGATION_NOT_SUPPORTED,readOnly</prop>
+				<prop key="search*">PROPAGATION_NOT_SUPPORTED,readOnly</prop>
+				<prop key="duanqu*">PROPAGATION_NOT_SUPPORTED</prop>
+				<prop key="*">readOnly</prop>
+			</props>
+		</property>
+	</bean>
+	<bean id="BeanProxy"
+		class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<property name="beanNames">
+			<value>client*Service,manager*Service</value>
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>transactionInterceptor</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="baseMapper" class="org.mybatis.spring.mapper.MapperFactoryBean"
+		abstract="true" lazy-init="true">
+		<property name="sqlSessionFactory" ref="sqlSessionFactoryCommon" />
+	</bean>
+
+	<bean id="userMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.common.dao.demo.UserMapper" />
+	</bean>
+
+
+
+	<bean id="friendMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.common.dao.user.FriendMapper" />
+	</bean>
+
+	<bean id="duanquConfig" class="com.duanqu.common.DuanquConfig">
+		<property name="host">
+			<value>${file.host}</value>
+		</property>
+		<property name="rootFolder">
+			<value>${file.root}</value>
+		</property>
+		<property name="thumbnailFolder">
+			<value>${thumbnail.folder}</value>
+		</property>
+		<property name="videoFolder">
+			<value>${video.folder}</value>
+		</property>
+		<property name="avatarFolder">
+			<value>${avatar.folder}</value>
+		</property>
+		<property name="thumbnailPath">
+			<value>${thumbnail.path}</value>
+		</property>
+		<property name="videoPath">
+			<value>${video.path}</value>
+		</property>
+		<property name="avatarPath">
+			<value>${avatar.path}</value>
+		</property>
+		<property name="famousThreshold">
+			<value>${famous.threshold}</value>
+		</property>
+		<property name="imageBucketName">
+			<value>${upyun.image.bucketname}</value>
+		</property>
+		<property name="videoBucketName">
+			<value>${upyun.video.bucketname}</value>
+		</property>
+		<property name="upyunUserName">
+			<value>${upyun.username}</value>
+		</property>
+		<property name="upyunPassword">
+			<value>${upyun.password}</value>
+		</property>
+		<property name="upyunImageDomain">
+			<value>${upyun.image.domain}</value>
+		</property>
+		<property name="upyunVideoDomain">
+			<value>${upyun.video.domain}</value>
+		</property>
+		<property name="wapHost">
+			<value>${wap.host}</value>
+		</property>
+		<property name="upyunAvatarDomain">
+			<value>${upyun.avatar.domain}</value>
+		</property>
+		<property name="avatarBucketName">
+			<value>${upyun.avatar.bucketname}</value>
+		</property>
+		<property name="defaultAvatar">
+			<value>${avatar.default}</value>
+		</property>
+		<property name="atMessage">
+			<value>${at.message}</value>
+		</property>
+		<property name="atMessage2">
+			<value>${at.message2}</value>
+		</property>
+		<property name="shareMessage">
+			<value>${share.message}</value>
+		</property>
+		<property name="shareMessage2">
+			<value>${share.message2}</value>
+		</property>
+		<property name="comeFrom">
+			<value>${come.from}</value>
+		</property>
+		<property name="aliyunBannerBucketName">
+			<value>${aliyunBannerBucketName}</value>
+		</property>
+		<property name="aliyunAvatarBucketName">
+			<value>${aliyunAvatarBucketName}</value>
+		</property>
+		<property name="aliyunThumbnailBucketName">
+			<value>${aliyunThumbnailBucketName}</value>
+		</property>
+		<property name="aliyunVideoBucketName">
+			<value>${aliyunVideoBucketName}</value>
+		</property>
+		<property name="aliyunHDVideoBucketName">
+			<value>${aliyunHDVideoBucketName}</value>
+		</property>
+		<property name="aliyunSystemImagesBucketName">
+			<value>${aliyunSystemImagesBucketName}</value>
+		</property>
+		<property name="aliyunBannerDomain">
+			<value>${aliyunBannerDomain}</value>
+		</property>
+		<property name="aliyunAvatarDomain">
+			<value>${aliyunAvatarDomain}</value>
+		</property>
+		<property name="aliyunThumbnailDomain">
+			<value>${aliyunThumbnailDomain}</value>
+		</property>
+		<property name="aliyunVideoDomain">
+			<value>${aliyunVideoDomain}</value>
+		</property>
+		<property name="aliyunHDVideoDomain">
+			<value>${aliyunHDVideoDomain}</value>
+		</property>
+		<property name="aliyunSystemImagesDomain">
+			<value>${aliyunSystemImagesDomain}</value>
+		</property>
+		<property name="groups">
+			<list>
+				<value>家人</value>
+				<value>朋友</value>
+				<value>兴趣好友</value>
+			</list>
+		</property>
+		<property name="imageContentType">
+			<set>
+				<value>image/jpeg</value>
+				<value>image/pjpeg</value>
+				<value>image/gif</value>
+				<value>image/png</value>
+				<value>image/x-png</value>
+			</set>
+		</property>
+		<property name="certPath">
+			<value>${cert_path}</value>
+		</property>
+		<property name="convertShellPath">
+			<value>${convert.shell.path}</value>
+		</property>
+		<property name="convertResultPath">
+			<value>${convert.result.path}</value>
+		</property>
+	</bean>
+
+	<bean id="emojiConfig" class="com.duanqu.common.EmojiConfig">
+		<property name="emojiSet">
+			<set>
+				<value>128512</value>
+				<value>128513</value>
+				<value>128514</value>
+				<value>128515</value>
+				<value>128516</value>
+				<value>128517</value>
+				<value>128518</value>
+				<value>128519</value>
+				<value>128520</value>
+				<value>128521</value>
+				<value>128522</value>
+				<value>128523</value>
+				<value>128524</value>
+				<value>128525</value>
+				<value>128526</value>
+				<value>128527</value>
+				<value>128528</value>
+				<value>128529</value>
+				<value>128530</value>
+				<value>128531</value>
+				<value>128532</value>
+				<value>128533</value>
+				<value>128534</value>
+				<value>128535</value>
+				<value>128536</value>
+				<value>128537</value>
+				<value>128538</value>
+				<value>128539</value>
+				<value>128540</value>
+				<value>128541</value>
+				<value>128542</value>
+				<value>128543</value>
+				<value>128544</value>
+				<value>128545</value>
+				<value>128546</value>
+				<value>128547</value>
+				<value>128548</value>
+				<value>128549</value>
+				<value>128550</value>
+				<value>128551</value>
+				<value>128552</value>
+				<value>128553</value>
+				<value>128554</value>
+				<value>128555</value>
+				<value>128556</value>
+				<value>128557</value>
+				<value>128558</value>
+				<value>128559</value>
+				<value>128560</value>
+				<value>128561</value>
+				<value>128562</value>
+				<value>128563</value>
+				<value>128564</value>
+				<value>128565</value>
+				<value>128566</value>
+				<value>128567</value>
+				<value>128568</value>
+				<value>128569</value>
+				<value>128570</value>
+				<value>128571</value>
+				<value>128572</value>
+				<value>128573</value>
+				<value>128574</value>
+				<value>128575</value>
+				<value>128576</value>
+				<value>128581</value>
+				<value>128582</value>
+				<value>128583</value>
+				<value>128584</value>
+				<value>128585</value>
+				<value>128586</value>
+				<value>128587</value>
+				<value>128588</value>
+				<value>128589</value>
+				<value>128590</value>
+				<value>128591</value>
+				<value>128677</value>
+				<value>128678</value>
+				<value>128679</value>
+				<value>128680</value>
+				<value>128681</value>
+				<value>128682</value>
+				<value>128683</value>
+				<value>128684</value>
+				<value>128685</value>
+				<value>128686</value>
+				<value>128687</value>
+				<value>128688</value>
+				<value>128689</value>
+				<value>128690</value>
+				<value>128691</value>
+				<value>128692</value>
+				<value>128693</value>
+				<value>128694</value>
+				<value>128695</value>
+				<value>128696</value>
+				<value>128697</value>
+				<value>128698</value>
+				<value>128699</value>
+				<value>128700</value>
+				<value>128701</value>
+				<value>128702</value>
+				<value>128703</value>
+				<value>128704</value>
+				<value>128705</value>
+				<value>128706</value>
+				<value>128707</value>
+				<value>128708</value>
+				<value>128709</value>
+				<value>127744</value>
+				<value>127745</value>
+				<value>127746</value>
+				<value>127747</value>
+				<value>127748</value>
+				<value>127749</value>
+				<value>127750</value>
+				<value>127751</value>
+				<value>127752</value>
+				<value>127753</value>
+				<value>127754</value>
+				<value>127755</value>
+				<value>127756</value>
+				<value>127757</value>
+				<value>127758</value>
+				<value>127759</value>
+				<value>127760</value>
+				<value>127761</value>
+				<value>127762</value>
+				<value>127763</value>
+				<value>127764</value>
+				<value>127765</value>
+				<value>127766</value>
+				<value>127767</value>
+				<value>127768</value>
+				<value>127769</value>
+				<value>127770</value>
+				<value>127771</value>
+				<value>127772</value>
+				<value>127773</value>
+				<value>127774</value>
+				<value>127775</value>
+				<value>127776</value>
+				<value>127792</value>
+				<value>127793</value>
+				<value>127794</value>
+				<value>127795</value>
+				<value>127796</value>
+				<value>127797</value>
+				<value>127799</value>
+				<value>127800</value>
+				<value>127801</value>
+				<value>127802</value>
+				<value>127803</value>
+				<value>127804</value>
+				<value>127805</value>
+				<value>127806</value>
+				<value>127807</value>
+				<value>127808</value>
+				<value>127809</value>
+				<value>127810</value>
+				<value>127811</value>
+				<value>127812</value>
+				<value>127813</value>
+				<value>127814</value>
+				<value>127815</value>
+				<value>127816</value>
+				<value>127817</value>
+				<value>127818</value>
+				<value>127819</value>
+				<value>127820</value>
+				<value>127821</value>
+				<value>127822</value>
+				<value>127823</value>
+				<value>127824</value>
+				<value>127825</value>
+				<value>127826</value>
+				<value>127827</value>
+				<value>127828</value>
+				<value>127829</value>
+				<value>127830</value>
+				<value>127831</value>
+				<value>127832</value>
+				<value>127833</value>
+				<value>127834</value>
+				<value>127835</value>
+				<value>127836</value>
+				<value>127837</value>
+				<value>127838</value>
+				<value>127839</value>
+				<value>127840</value>
+				<value>127841</value>
+				<value>127842</value>
+				<value>127843</value>
+				<value>127844</value>
+				<value>127845</value>
+				<value>127846</value>
+				<value>127847</value>
+				<value>127848</value>
+				<value>127849</value>
+				<value>127850</value>
+				<value>127851</value>
+				<value>127852</value>
+				<value>127853</value>
+				<value>127854</value>
+				<value>127855</value>
+				<value>127856</value>
+				<value>127857</value>
+				<value>127858</value>
+				<value>127859</value>
+				<value>127860</value>
+				<value>127861</value>
+				<value>127862</value>
+				<value>127863</value>
+				<value>127864</value>
+				<value>127865</value>
+				<value>127866</value>
+				<value>127867</value>
+				<value>127868</value>
+				<value>127872</value>
+				<value>127873</value>
+				<value>127874</value>
+				<value>127875</value>
+				<value>127876</value>
+				<value>127877</value>
+				<value>127878</value>
+				<value>127879</value>
+				<value>127880</value>
+				<value>127881</value>
+				<value>127882</value>
+				<value>127883</value>
+				<value>127884</value>
+				<value>127885</value>
+				<value>127886</value>
+				<value>127887</value>
+				<value>127888</value>
+				<value>127889</value>
+				<value>127890</value>
+				<value>127891</value>
+				<value>127904</value>
+				<value>127905</value>
+				<value>127906</value>
+				<value>127907</value>
+				<value>127908</value>
+				<value>127909</value>
+				<value>127910</value>
+				<value>127911</value>
+				<value>127912</value>
+				<value>127913</value>
+				<value>127914</value>
+				<value>127915</value>
+				<value>127916</value>
+				<value>127917</value>
+				<value>127918</value>
+				<value>127919</value>
+				<value>127920</value>
+				<value>127921</value>
+				<value>127922</value>
+				<value>127923</value>
+				<value>127924</value>
+				<value>127925</value>
+				<value>127926</value>
+				<value>127927</value>
+				<value>127928</value>
+				<value>127929</value>
+				<value>127930</value>
+				<value>127931</value>
+				<value>127932</value>
+				<value>127933</value>
+				<value>127934</value>
+				<value>127935</value>
+				<value>127936</value>
+				<value>127937</value>
+				<value>127938</value>
+				<value>127939</value>
+				<value>127940</value>
+				<value>127942</value>
+				<value>127943</value>
+				<value>127944</value>
+				<value>127945</value>
+				<value>127946</value>
+				<value>127968</value>
+				<value>127969</value>
+				<value>127970</value>
+				<value>127971</value>
+				<value>127972</value>
+				<value>127973</value>
+				<value>127974</value>
+				<value>127975</value>
+				<value>127976</value>
+				<value>127977</value>
+				<value>127978</value>
+				<value>127979</value>
+				<value>127980</value>
+				<value>127981</value>
+				<value>127982</value>
+				<value>127983</value>
+				<value>127984</value>
+				<value>128000</value>
+				<value>128001</value>
+				<value>128002</value>
+				<value>128003</value>
+				<value>128004</value>
+				<value>128005</value>
+				<value>128006</value>
+				<value>128007</value>
+				<value>128008</value>
+				<value>128009</value>
+				<value>128010</value>
+				<value>128011</value>
+				<value>128012</value>
+				<value>128013</value>
+				<value>128014</value>
+				<value>128015</value>
+				<value>128016</value>
+				<value>128017</value>
+				<value>128018</value>
+				<value>128019</value>
+				<value>128020</value>
+				<value>128021</value>
+				<value>128022</value>
+				<value>128023</value>
+				<value>128024</value>
+				<value>128025</value>
+				<value>128026</value>
+				<value>128027</value>
+				<value>128028</value>
+				<value>128029</value>
+				<value>128030</value>
+				<value>128031</value>
+				<value>128032</value>
+				<value>128033</value>
+				<value>128034</value>
+				<value>128035</value>
+				<value>128036</value>
+				<value>128037</value>
+				<value>128038</value>
+				<value>128039</value>
+				<value>128040</value>
+				<value>128041</value>
+				<value>128042</value>
+				<value>128043</value>
+				<value>128044</value>
+				<value>128045</value>
+				<value>128046</value>
+				<value>128047</value>
+				<value>128048</value>
+				<value>128049</value>
+				<value>128050</value>
+				<value>128051</value>
+				<value>128052</value>
+				<value>128053</value>
+				<value>128054</value>
+				<value>128055</value>
+				<value>128056</value>
+				<value>128057</value>
+				<value>128058</value>
+				<value>128059</value>
+				<value>128060</value>
+				<value>128061</value>
+				<value>128062</value>
+				<value>128064</value>
+				<value>128066</value>
+				<value>128067</value>
+				<value>128068</value>
+				<value>128069</value>
+				<value>128070</value>
+				<value>128071</value>
+				<value>128072</value>
+				<value>128073</value>
+				<value>128074</value>
+				<value>128075</value>
+				<value>128076</value>
+				<value>128077</value>
+				<value>128078</value>
+				<value>128079</value>
+				<value>128080</value>
+				<value>128081</value>
+				<value>128082</value>
+				<value>128083</value>
+				<value>128084</value>
+				<value>128085</value>
+				<value>128086</value>
+				<value>128087</value>
+				<value>128088</value>
+				<value>128089</value>
+				<value>128090</value>
+				<value>128091</value>
+				<value>128092</value>
+				<value>128093</value>
+				<value>128094</value>
+				<value>128095</value>
+				<value>128096</value>
+				<value>128097</value>
+				<value>128098</value>
+				<value>128099</value>
+				<value>128100</value>
+				<value>128101</value>
+				<value>128102</value>
+				<value>128103</value>
+				<value>128104</value>
+				<value>128105</value>
+				<value>128106</value>
+				<value>128107</value>
+				<value>128108</value>
+				<value>128109</value>
+				<value>128110</value>
+				<value>128111</value>
+				<value>128112</value>
+				<value>128113</value>
+				<value>128114</value>
+				<value>128115</value>
+				<value>128116</value>
+				<value>128117</value>
+				<value>128118</value>
+				<value>128119</value>
+				<value>128120</value>
+				<value>128121</value>
+				<value>128122</value>
+				<value>128123</value>
+				<value>128124</value>
+				<value>128125</value>
+				<value>128126</value>
+				<value>128127</value>
+				<value>128128</value>
+				<value>128129</value>
+				<value>128130</value>
+				<value>128131</value>
+				<value>128132</value>
+				<value>128133</value>
+				<value>128134</value>
+				<value>128135</value>
+				<value>128136</value>
+				<value>128137</value>
+				<value>128138</value>
+				<value>128139</value>
+				<value>128140</value>
+				<value>128141</value>
+				<value>128142</value>
+				<value>128143</value>
+				<value>128144</value>
+				<value>128145</value>
+				<value>128146</value>
+				<value>128147</value>
+				<value>128148</value>
+				<value>128149</value>
+				<value>128150</value>
+				<value>128151</value>
+				<value>128152</value>
+				<value>128153</value>
+				<value>128154</value>
+				<value>128155</value>
+				<value>128156</value>
+				<value>128157</value>
+				<value>128158</value>
+				<value>128159</value>
+				<value>128160</value>
+				<value>128161</value>
+				<value>128162</value>
+				<value>128163</value>
+				<value>128164</value>
+				<value>128165</value>
+				<value>128166</value>
+				<value>128167</value>
+				<value>128168</value>
+				<value>128169</value>
+				<value>128170</value>
+				<value>128171</value>
+				<value>128172</value>
+				<value>128173</value>
+				<value>128174</value>
+				<value>128175</value>
+				<value>128176</value>
+				<value>128177</value>
+				<value>128178</value>
+				<value>128179</value>
+				<value>128180</value>
+				<value>128181</value>
+				<value>128182</value>
+				<value>128183</value>
+				<value>128184</value>
+				<value>128185</value>
+				<value>128186</value>
+				<value>128187</value>
+				<value>128188</value>
+				<value>128189</value>
+				<value>128190</value>
+				<value>128191</value>
+				<value>128192</value>
+				<value>128193</value>
+				<value>128194</value>
+				<value>128195</value>
+				<value>128196</value>
+				<value>128197</value>
+				<value>128198</value>
+				<value>128199</value>
+				<value>128200</value>
+				<value>128201</value>
+				<value>128202</value>
+				<value>128203</value>
+				<value>128204</value>
+				<value>128205</value>
+				<value>128206</value>
+				<value>128207</value>
+				<value>128208</value>
+				<value>128209</value>
+				<value>128210</value>
+				<value>128211</value>
+				<value>128212</value>
+				<value>128213</value>
+				<value>128214</value>
+				<value>128215</value>
+				<value>128216</value>
+				<value>128217</value>
+				<value>128218</value>
+				<value>128219</value>
+				<value>128220</value>
+				<value>128221</value>
+				<value>128222</value>
+				<value>128223</value>
+				<value>128224</value>
+				<value>128225</value>
+				<value>128226</value>
+				<value>128227</value>
+				<value>128228</value>
+				<value>128229</value>
+				<value>128230</value>
+				<value>128231</value>
+				<value>128232</value>
+				<value>128233</value>
+				<value>128234</value>
+				<value>128235</value>
+				<value>128236</value>
+				<value>128237</value>
+				<value>128238</value>
+				<value>128239</value>
+				<value>128240</value>
+				<value>128241</value>
+				<value>128242</value>
+				<value>128243</value>
+				<value>128244</value>
+				<value>128245</value>
+				<value>128246</value>
+				<value>128247</value>
+				<value>128249</value>
+				<value>128250</value>
+				<value>128251</value>
+				<value>128252</value>
+				<value>128256</value>
+				<value>128257</value>
+				<value>128258</value>
+				<value>128259</value>
+				<value>128260</value>
+				<value>128261</value>
+				<value>128262</value>
+				<value>128263</value>
+				<value>128264</value>
+				<value>128265</value>
+				<value>128266</value>
+				<value>128267</value>
+				<value>128268</value>
+				<value>128269</value>
+				<value>128270</value>
+				<value>128271</value>
+				<value>128272</value>
+				<value>128273</value>
+				<value>128274</value>
+				<value>128275</value>
+				<value>128276</value>
+				<value>128277</value>
+				<value>128278</value>
+				<value>128279</value>
+				<value>128280</value>
+				<value>128281</value>
+				<value>128282</value>
+				<value>128283</value>
+				<value>128284</value>
+				<value>128285</value>
+				<value>128286</value>
+				<value>128287</value>
+				<value>128288</value>
+				<value>128289</value>
+				<value>128290</value>
+				<value>128291</value>
+				<value>128292</value>
+				<value>128293</value>
+				<value>128294</value>
+				<value>128295</value>
+				<value>128296</value>
+				<value>128297</value>
+				<value>128298</value>
+				<value>128299</value>
+				<value>128300</value>
+				<value>128301</value>
+				<value>128302</value>
+				<value>128303</value>
+				<value>128304</value>
+				<value>128305</value>
+				<value>128306</value>
+				<value>128307</value>
+				<value>128308</value>
+				<value>128309</value>
+				<value>128310</value>
+				<value>128311</value>
+				<value>128312</value>
+				<value>128313</value>
+				<value>128314</value>
+				<value>128315</value>
+				<value>128316</value>
+				<value>128317</value>
+				<value>128320</value>
+				<value>128321</value>
+				<value>128322</value>
+				<value>128323</value>
+				<value>128336</value>
+				<value>128337</value>
+				<value>128338</value>
+				<value>128339</value>
+				<value>128340</value>
+				<value>128341</value>
+				<value>128342</value>
+				<value>128343</value>
+				<value>128344</value>
+				<value>128345</value>
+				<value>128346</value>
+				<value>128347</value>
+				<value>128348</value>
+				<value>128349</value>
+				<value>128350</value>
+				<value>128351</value>
+				<value>128352</value>
+				<value>128353</value>
+				<value>128354</value>
+				<value>128355</value>
+				<value>128356</value>
+				<value>128357</value>
+				<value>128358</value>
+				<value>128359</value>
+				<value>128507</value>
+				<value>128508</value>
+				<value>128509</value>
+				<value>128510</value>
+				<value>128511</value>
+				<value>128640</value>
+				<value>128641</value>
+				<value>128642</value>
+				<value>128643</value>
+				<value>128644</value>
+				<value>128645</value>
+				<value>128646</value>
+				<value>128647</value>
+				<value>128648</value>
+				<value>128649</value>
+				<value>128650</value>
+				<value>128651</value>
+				<value>128652</value>
+				<value>128653</value>
+				<value>128654</value>
+				<value>128655</value>
+				<value>128656</value>
+				<value>128657</value>
+				<value>128658</value>
+				<value>128659</value>
+				<value>128660</value>
+				<value>128661</value>
+				<value>128662</value>
+				<value>128663</value>
+				<value>128664</value>
+				<value>128665</value>
+				<value>128666</value>
+				<value>128667</value>
+				<value>128668</value>
+				<value>128669</value>
+				<value>128670</value>
+				<value>128671</value>
+				<value>128672</value>
+				<value>128673</value>
+				<value>128674</value>
+				<value>128675</value>
+				<value>128676</value>
+			</set>
+		</property>
+
+	</bean>
+
+	<!-- 搜索配置 -->
+	<bean id="searchClientConfig" class="io.searchbox.client.config.ClientConfig">
+		<property name="properties">
+			<map>
+				<entry key="serverList">
+					<set>
+						<value>${search.service}</value>
+					</set>
+				</entry>
+				<entry key="maxTotalConnection">
+					<value>1024</value>
+				</entry>
+			</map>
+		</property>
+	</bean>
+	<bean id="jestClientFactory" class="io.searchbox.client.JestClientFactory">
+		<property name="clientConfig">
+			<ref bean="searchClientConfig" />
+		</property>
+	</bean>
+	<bean id="esIndexBuilder" class="com.duanqu.common.index.ESIndexBuilderImpl">
+		<property name="indexName">
+			<value>duanqu_index</value>
+		</property>
+		<property name="userType">
+			<value>user</value>
+		</property>
+		<property name="contentType">
+			<value>content</value>
+		</property>
+		<property name="openUserType">
+			<value>openuser</value>
+		</property>
+		<property name="jestClientFactory">
+			<ref bean="jestClientFactory" />
+		</property>
+	</bean>
+
+	<bean id="indexBuilder" class="com.duanqu.common.index.IndexBuilderImpl">
+		<property name="indexName">
+			<value>duanqu_index</value>
+		</property>
+		<property name="userType">
+			<value>user</value>
+		</property>
+		<property name="contentType">
+			<value>content</value>
+		</property>
+		<property name="openUserType">
+			<value>openuser</value>
+		</property>
+		<property name="searchServiceIp">
+			<value>${elasticsearch.ip}</value>
+		</property>
+		<property name="searchServicePort">
+			<value>${elasticsearch.port}</value>
+		</property>
+		<property name="searchClusterName">
+			<value>${elasticsearch.cluster.name}</value>
+		</property>
+	</bean>
+
+	<!-- jms activeMQ 配置 -->
+	<!-- 配置connectionFactory <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" 
+		destroy-method="stop"> <property name="connectionFactory"> <bean class="org.apache.activemq.ActiveMQConnectionFactory"> 
+		<property name="brokerURL"> <value>${jms.url}</value> </property> </bean> 
+		</property> <property name="maxConnections" value="${jms.maxConnections}"></property> 
+		</bean> -->
+	<!-- Spring JMS Template Begin <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate"> 
+		<property name="connectionFactory"> <ref local="jmsFactory" /> </property> 
+		<property name="defaultDestinationName" value="${jms.defaultDestinationName}" 
+		/> <property name="pubSubDomain" value="${jms.pubSubDomain}" /> </bean> <bean 
+		id="baseProduceService" class="com.duanqu.common.service.BaseProduceService" 
+		abstract="true"> <property name="jmsTemplate"> <ref bean="jmsTemplate" /> 
+		</property> </bean> -->
+	<!-- Spring JMS Template End -->
+	<!-- 消息队列 <import resource="messagequeue.xml" /> -->
+</beans>

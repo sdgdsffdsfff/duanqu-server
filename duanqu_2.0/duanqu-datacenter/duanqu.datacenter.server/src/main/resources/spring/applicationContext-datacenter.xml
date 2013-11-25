@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:redis="http://www.springframework.org/schema/redis"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd        
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/tx 
+     http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+     http://www.springframework.org/schema/redis 
+     http://www.springframework.org/schema/redis/spring-redis.xsd">
+
+	<bean id="shareService" class="com.duanqu.common.share.ShareServiceImpl" />
+<!-- 
+	<bean id="indexBuilder" class="com.duanqu.dataserver.service.index.IndexBuilderImpl"
+		parent="baseService" />
+
+	<bean id="esIndexBuilder" class="com.duanqu.dataserver.service.index.ESIndexBuilderImpl">
+		<property name="indexName">
+			<value>duanqu_index</value>
+		</property>
+		<property name="userType">
+			<value>user</value>
+		</property>
+		<property name="contentType">
+			<value>content</value>
+		</property>
+		<property name="jestClientFactory">
+			<ref bean="jestClientFactory" />
+		</property>
+	</bean>
+ -->
+	<bean id="contentService"
+		class="com.duanqu.dataserver.service.content.ContentServiceImpl"
+		parent="baseService">
+		<property name="redisTimelineService">
+			<ref bean="redisTimelineService" />
+		</property>
+		<property name="redisRelationshipService">
+			<ref bean="redisRelationshipService" />
+		</property>
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="indexBuilder">
+			<ref bean="indexBuilder" />
+		</property>
+		<property name="shareService">
+			<ref bean="shareService" />
+		</property>
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+		<property name="clientContentService">
+			<ref bean="clientContentService" />
+		</property>
+		<property name="compressPublisher">
+			<ref bean="compressPublisher" />
+		</property>
+		<property name="redisMessageService">
+			<ref bean="redisMessageService" />
+		</property>
+		<property name="redisGroupService">
+			<ref bean="redisGroupService" />
+		</property>
+		<property name="clientLikeContentService">
+			<ref bean="clientLikeContentService"/>
+		</property>
+		<property name="clientForwardContentService">
+			<ref bean="clientForwardContentService"/>
+		</property>
+		<property name="redisReportService">
+			<ref bean="redisReportService"/>
+		</property>
+		<property name="redisHotService">
+			<ref bean="redisHotService"/>
+		</property>
+	</bean>
+
+	<bean id="userService" class="com.duanqu.dataserver.service.user.UserServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisRelationshipService">
+			<ref bean="redisRelationshipService" />
+		</property>
+		<property name="shareService">
+			<ref bean="shareService" />
+		</property>
+		<property name="clientUserService">
+			<ref bean="clientUserService" />
+		</property>
+		<property name="indexBuilder">
+			<ref bean="indexBuilder" />
+		</property>
+		<property name="redisGroupService">
+			<ref bean="redisGroupService" />
+		</property>
+		<property name="clientGroupService">
+			<ref bean="clientGroupService"/>
+		</property>
+		<property name="redisMessageService">
+			<ref bean="redisMessageService" />
+		</property>
+		<property name="clientMessageService">
+			<ref bean="clientMessageService"/>
+		</property>
+		<property name="redisJMSMessageService">
+			<ref bean="redisJMSMessageService"/>
+		</property>
+		<property name="redisTimelineService">
+			<ref bean="redisTimelineService" />
+		</property>
+	</bean>
+	
+	<bean id="groupService" class="com.duanqu.dataserver.service.group.GroupServiceImpl"
+		parent="baseService">
+		<property name="clientGroupService">
+			<ref bean="clientGroupService" />
+		</property>
+	</bean>
+
+	<bean id="commentService"
+		class="com.duanqu.dataserver.service.comment.CommentServiceImpl"
+		parent="baseService">
+		<property name="redisCommentService">
+			<ref bean="redisCommentService" />
+		</property>
+		<property name="clientCommentService">
+			<ref bean="clientCommentService" />
+		</property>
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisContentService">
+			<ref bean="redisContentService" />
+		</property>
+		<property name="redisMessageService">
+			<ref bean="redisMessageService" />
+		</property>
+		<property name="redisTimelineService">
+			<ref bean="redisTimelineService"/>
+		</property>
+	</bean>
+
+	<bean id="messageService"
+		class="com.duanqu.dataserver.service.message.MessageServiceImpl"
+		parent="baseService">
+		<property name="redisUserService">
+			<ref bean="redisUserService" />
+		</property>
+		<property name="redisMessageService">
+			<ref bean="redisMessageService"/>
+		</property>
+		<property name="clientMessageService">
+			<ref bean="clientMessageService"/>
+		</property>
+	</bean>
+
+	<bean id="systemService" class="com.duanqu.dataserver.service.system.SystemServiceImpl"
+		parent="baseService">
+		<property name="clientReportService">
+			<ref bean="clientReportService"/>
+		</property>
+		<property name="clientFeedBackService">
+			<ref bean="clientFeedBackService"/>
+		</property>
+		<property name="clientUserService">
+			<ref bean="clientUserService"/>
+		</property>
+		<property name="redisRelationshipService">
+			<ref bean="redisRelationshipService"/>
+		</property>
+	</bean>
+
+	<bean id="messageConsumer"
+		class="org.springframework.data.redis.listener.adapter.MessageListenerAdapter">
+		<constructor-arg>
+			<bean class="com.duanqu.dataserver.service.redis.sub.MessageConsumerImpl">
+				<property name="contentService">
+					<ref bean="contentService" />
+				</property>
+				<property name="userService">
+					<ref bean="userService" />
+				</property>
+				<property name="commentService">
+					<ref bean="commentService" />
+				</property>
+				<property name="messageService">
+					<ref bean="messageService" />
+				</property>
+				<property name="systemService">
+					<ref bean="systemService" />
+				</property>
+				<property name="groupService">
+					<ref bean="groupService"/>
+				</property>
+				<!-- 
+				<property name="taskExecutor">
+					<ref bean="taskExecutor"/>
+				</property>
+				 -->
+			</bean>
+		</constructor-arg>
+	</bean>
+
+	<!-- -->
+	<bean id="redisContainer"
+		class="org.springframework.data.redis.listener.RedisMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsJedisConnectionFactory" />
+		<property name="messageListeners">
+			<map>
+				<entry key-ref="messageConsumer">
+					<bean class="org.springframework.data.redis.listener.ChannelTopic">
+						<constructor-arg value="duanqu-notice" />
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+<!-- 
+	<bean id="taskExecutor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="50" />
+		<property name="maxPoolSize" value="100" />
+		<property name="queueCapacity" value="100000" />
+	</bean>  
+	 -->
+</beans>

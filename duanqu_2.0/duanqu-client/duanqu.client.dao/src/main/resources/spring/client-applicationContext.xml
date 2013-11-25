@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd        
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	<bean id="clientUserMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.client.dao.ClientUserMapper" />
+	</bean>
+	
+	<bean id="clientContentMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.client.dao.ClientContentMapper" />
+	</bean>
+	
+	<bean id="clientCommentMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.client.dao.ClientCommentMapper" />
+	</bean>
+	
+	<bean id="clientGroupMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.client.dao.ClientGroupMapper" />
+	</bean>
+	<bean id="clientMessageMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.client.dao.ClientMessageMapper" />
+	</bean>
+	
+	<bean id="clientLikeContentMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.client.dao.ClientLikeContentMapper" />
+	</bean>
+	
+	<bean id="clientForwardContentMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.client.dao.ClientForwardContentMapper" />
+	</bean>
+	
+	<bean id="clientForwardContentService" class="com.duanqu.client.service.forwardcontent.ClientForwardContentServiceImpl" autowire="byName"></bean>
+	
+	<bean id="clientLikeContentService" class="com.duanqu.client.service.likecontent.ClientLikeContentServiceImpl" autowire="byName"></bean>
+	
+	
+	<bean id="clientFeedBackMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.client.dao.ClientFeedBackMapper" />
+	</bean>
+	
+	<bean id="clientReportMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.client.dao.ClientReportMapper" />
+	</bean>
+	
+	<bean id="clientReportService" class="com.duanqu.client.service.report.ClientReportServiceImpl" autowire="byName"></bean>
+	
+	
+	<bean id="clientFeedBackService" class="com.duanqu.client.service.feedback.ClientFeedBackServiceImpl" autowire="byName"></bean>
+	
+	<bean id="clientMessageService" class="com.duanqu.client.service.message.ClientMessageServiceImpl" autowire="byName"></bean>
+	
+	<bean id="clientUserService" class="com.duanqu.client.service.user.ClientUserServiceImpl" autowire="byName"></bean>
+	
+	<bean id="clientContentService" class="com.duanqu.client.service.info.ClientContentServiceImpl" autowire="byName"></bean>
+
+    <bean id="clientCommentService" class="com.duanqu.client.service.comment.ClientCommentServiceImpl" autowire="byName"></bean>
+    
+    <bean id="clientGroupService" class="com.duanqu.client.service.group.ClientGroupServiceImpl" autowire="byName"></bean>
+    
+   <bean id="esSearcher" class="com.duanqu.client.search.ESSearcherImpl">
+		<property name="redisUserService">
+			<ref bean="redisUserService"/>
+		</property>
+		<property name="redisContentService">
+			<ref bean="redisContentService"/>
+		</property>
+		<property name="redisRelationshipService">
+			<ref bean="redisRelationshipService"/>
+		</property>
+		<property name="redisTimelineService">
+			<ref bean="redisTimelineService"/>
+		</property>
+		<property name="indexName">
+			<value>duanqu_index</value>
+		</property>
+		<property name="userType">
+			<value>user</value>
+		</property>
+		<property name="contentType">
+			<value>content</value>
+		</property>
+		<property name="openUserType">
+			<value>openuser</value>
+		</property>
+		<property name="searchServiceIp">
+			<value>${elasticsearch.ip}</value>
+		</property>
+		<property name="searchServicePort">
+			<value>${elasticsearch.port}</value>
+		</property>
+		<property name="searchClusterName">
+			<value>${elasticsearch.cluster.name}</value>
+		</property>
+		<!-- 
+		<property name="jestClientFactory">
+			<ref bean="jestClientFactory"/>
+		</property>
+		 -->
+	</bean>
+	<!-- Jms 生产者配置 
+	<bean id="userProducerServiceImpl" class="com.duanqu.client.jms.UserProducerServiceImpl" parent="baseProduceService">
+		<property name="destination">
+			<ref bean="newUserDestination"/>
+		</property>
+	</bean>
+	-->
+</beans>

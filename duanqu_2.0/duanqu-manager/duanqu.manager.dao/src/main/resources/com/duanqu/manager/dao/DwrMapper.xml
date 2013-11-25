@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.manager.dao.DwrMapper">
+
+
+	<select id="getContentModelByCid" parameterType="RecommendModel"
+		resultType="ContentModel">
+		select a.is_private isPrivate,a.uid, a.c_status cStatus from
+		tab_content_info a where a.cid=#{cid} and not EXISTS (select 1 from
+		tab_editor_contentrecommend b where a.cid=b.cid and b.type=#{type} )
+
+	</select>
+
+
+	<insert id="insertLikeContentModel" parameterType="LikeContentModel">
+		insert into tab_user_likecontent (uid,cid,create_time)
+		values(#{uid},#{cid},#{createTime})
+	</insert>
+
+	<update id="updateContentLikeNum" parameterType="Map">
+		update tab_content_info set like_falsenum=like_falsenum-#{num} where
+		cid=#{cid}
+	</update>
+
+	<select id="queryUserListByLikeMj" resultType="Long"
+		parameterType="Long">
+		select a.uid from tab_user_info a where a.role_id=4 and not EXISTS
+		(select 1
+		from tab_user_likecontent b where b.cid=#{cid} and
+		a.uid=b.uid)
+	</select>
+	
+	<select id="getUserModel" parameterType="Map" resultType="UserModel">
+	select uid from tab_editor_userrecommend where uid=#{uid} and type=#{type}
+	</select>
+
+
+
+</mapper>
+
+

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd        
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	<bean id="editorMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.common.dao.editor.EditorMapper" />
+	</bean>
+	
+	<bean id="contentMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.common.dao.content.ContentMapper" />
+	</bean>
+	
+	<bean id="commentMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.manager.dao.CommentMapper" />
+	</bean>
+	
+	<bean id="userAdminMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.manager.dao.UserAdminMapper" />
+	</bean>
+	
+	<bean id="tagMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.manager.dao.TagMapper" />
+	</bean>
+	
+	<bean id="dwrMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.manager.dao.DwrMapper" />
+	</bean>
+	
+	<bean id="bannerMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.manager.dao.BannerMapper" />
+	</bean>
+	
+	<bean id="sysResourceMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.manager.dao.SysResourceMapper" />
+	</bean>
+	
+	<bean id="subjectMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.manager.dao.SubjectMapper" />
+	</bean>
+	
+	<bean id="filterWordMapper" parent="baseMapper">
+		<property name="mapperInterface" value="com.duanqu.manager.dao.FilterWordMapper" />
+	</bean>
+	
+	<bean id="managerFilterService" class="com.duanqu.manager.service.filter.ManagerFilterServiceImpl" autowire="byName"></bean>
+	
+	<bean id="managerBannerService" class="com.duanqu.manager.service.banner.ManagerBannerServiceImpl" autowire="byName"></bean>
+	
+    <bean id="managerDwrService" class="com.duanqu.manager.service.dwr.ManagerDwrServiceImpl" autowire="byName"></bean>
+	
+	<bean id="managerTagService" class="com.duanqu.manager.service.tag.ManagerTagServiceImpl" autowire="byName"></bean>
+
+    <bean id="managerEditorService" class="com.duanqu.manager.service.editor.ManagerEditorServiceImpl" autowire="byName"></bean>
+    
+    <bean id="managerUserService" class="com.duanqu.manager.service.user.ManagerUserServiceImpl" autowire="byName"></bean>
+    
+    <bean id="managerContentService" class="com.duanqu.manager.service.content.ManagerContentServiceImpl" autowire="byName"></bean>
+    
+    <bean id="managerHotService" class="com.duanqu.manager.service.hot.ManagerHotServiceImpl" autowire="byName"></bean>
+ 
+    <bean id="shareService" class="com.duanqu.common.share.ShareServiceImpl" autowire="byName"></bean>
+    
+    <bean id="managerResourceService" class="com.duanqu.manager.service.resource.ManagerResourceServiceImpl" autowire="byName"></bean>
+    
+    <bean id="managerSubjectService" class="com.duanqu.manager.service.subject.ManagerSubjectServiceImpl" autowire="byName"></bean>
+    
+    <!-- 调度业务 -->
+    <bean id="getTagInfojobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerEditorService"/>
+        <property name="targetMethod" value="queryTagInfo"/>
+        <property name="concurrent" value="false"></property>
+    </bean>
+    <!-- 热门达人 -->
+     <bean id="getHostListjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerHotService"/>
+        <property name="targetMethod" value="insertHotList"/>
+        <property name="concurrent" value="false"></property>
+    </bean>
+    <!-- 热门内容 -->
+    <bean id="getHostContentListjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerHotService"/>
+        <property name="targetMethod" value="insertHotContentList"/>
+        <property name="concurrent" value="false"></property>
+    </bean>
+    
+    <bean id="insertRedisjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerContentService"/>
+        <property name="targetMethod" value="insertRedisFromContent"/>
+        <property name="concurrent" value="false"></property>
+    </bean>
+    
+    <!-- 第三方平台用户抓取 -->
+    <bean id="getUserFriendListjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerUserService"/>
+        <property name="targetMethod" value="getUserFriendList"/>
+        <property name="concurrent" value="false"></property>  <!-- 防止第一个job没有执行完，第二个job又开始执行 -->
+    </bean>
+    <!-- 匹配好友数据 -->
+    <bean id="getMatchFriendjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerUserService"/>
+        <property name="targetMethod" value="duanquUpdateUserAll"/>
+        <property name="concurrent" value="false"></property>  <!-- 防止第一个job没有执行完，第二个job又开始执行 -->
+    </bean>
+    
+      <!-- 定时推送发现首页-->
+    <bean id="insertRedisRecommendjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerContentService"/>
+        <property name="targetMethod" value="insertDsTsContent"/>
+        <property name="concurrent" value="false"></property>  <!-- 防止第一个job没有执行完，第二个job又开始执行 -->
+    </bean>
+    <!-- 定时接触禁言 -->
+    <bean id="updateUserNormaljobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerUserService"/>
+        <property name="targetMethod" value="updateUserNormalAll"/>
+        <property name="concurrent" value="false"></property>  <!-- 防止第一个job没有执行完，第二个job又开始执行 -->
+    </bean>
+    <!-- 定时推送消息 -->
+    <bean id="duanquMessagePushFromDbjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerUserService"/>
+        <property name="targetMethod" value="duanquMessagePushFromDb"/>
+        <property name="concurrent" value="false"></property>  <!-- 防止第一个job没有执行完，第二个job又开始执行 -->
+    </bean>
+    <!-- 新版本总榜排行 -->
+     <bean id="allHotTopjobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerContentService"/>
+        <property name="targetMethod" value="allHotTop"/>
+        <property name="concurrent" value="false"></property>  <!-- 防止第一个job没有执行完，第二个job又开始执行 -->
+    </bean>
+    <!-- 新版本周榜排行 -->
+     <bean id="weekHotTopobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="managerContentService"/>
+        <property name="targetMethod" value="weekHotTop"/>
+        <property name="concurrent" value="false"></property>  <!-- 防止第一个job没有执行完，第二个job又开始执行 -->
+    </bean>
+    
+    
+    
+    <!-- 增加调度业务触发器 
+        每隔5分钟执行一次  扫描内容表，把定时上传的内容，时间到了的，插入缓存
+    -->
+    <bean id="redisTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="insertRedisjobDetail"/>
+        <property name="cronExpression" value="0 0/5 * * * ?"/>
+    </bean>
+    
+    <!-- 获取热门达人，每隔1分钟执行一次 -->
+    <bean id="hostTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="getHostListjobDetail"/>
+        <property name="cronExpression" value="0 0/1 * * * ?"/>
+    </bean>
+    <!-- 热门内容  每隔2分钟执行一次 -->
+    <bean id="hostContentTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="getHostContentListjobDetail"/>
+        <property name="cronExpression" value="0 0/4 * * * ?"/>
+    </bean>
+    <!-- 获取热门标签，每隔1分钟执行一次 -->
+    <bean id="cronTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="getTagInfojobDetail"/>
+        <property name="cronExpression" value="0 0/1 * * * ?"/>
+    </bean>
+    <!--  第三方好友抓去 一天一次 ，凌晨2点抓取-->
+    <bean id="userThTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="getUserFriendListjobDetail"/>
+        
+        <property name="cronExpression" value="0 0 2 * * ?"/>
+    </bean>
+    <!-- 好友匹配  每隔30分钟执行一次 -->
+    <bean id="matchFriend" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="getMatchFriendjobDetail"/>
+        <property name="cronExpression" value="0 0/3 * * * ?"/>
+    </bean>
+    
+    <!-- 定时推送内容1分钟执行一次 -->
+    <bean id="recommendTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="insertRedisRecommendjobDetail"/>
+        <property name="cronExpression" value="0 0/1 * * * ?"/>
+    </bean>
+    <!-- 定时接触禁言5分钟执行一次 -->
+     <bean id="userNormalTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="updateUserNormaljobDetail"/>
+        <property name="cronExpression" value="0 0/5 * * * ?"/>
+    </bean>
+    <!-- 定时推送信息 10分钟执行一次 -->
+    <bean id="duanquMessagePushFromDbTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="duanquMessagePushFromDbjobDetail"/>
+        <property name="cronExpression" value="0 0/10 * * * ?"/>
+    </bean>
+    
+    <!-- 定时刷新新版总榜 分钟执行一次-->
+    <bean id="allHotTopTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="allHotTopjobDetail"/>
+        <property name="cronExpression" value="0 0/2 * * * ?"/>
+    </bean>
+    <!-- 定时刷新新版周榜 分钟执行一次-->
+    <bean id="weekHotTopTrigger" lazy-init="false" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="weekHotTopobDetail"/>
+        <property name="cronExpression" value="0 0/2 * * * ?"/>
+    </bean>
+    
+    <!-- 启动工作 -->
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="cronTrigger" />
+                <ref bean="hostTrigger" />   
+                <ref bean="redisTrigger" /> 
+                <ref bean="userThTrigger"/> 
+                <ref bean="matchFriend"/> 
+                <ref bean="recommendTrigger"/> 
+                <ref bean="userNormalTrigger"/>
+                <ref bean="duanquMessagePushFromDbTrigger"/>
+                <ref bean="weekHotTopTrigger"/>
+                <ref bean="allHotTopTrigger"/>
+                <ref bean="hostContentTrigger"/>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- 播放次数同步 -->
+    <bean id="showTimesThread" class="com.duanqu.manager.service.thread.ShowTimesSynThread">
+    	<property name="redisContentService">
+    		<ref bean="redisContentService"/>
+    	</property>
+    	<property name="managerContentService">
+    		<ref bean="managerContentService"/>
+    	</property>
+    </bean>
+    
+    <bean id="relationShipThread" class="com.duanqu.manager.service.thread.RelationshipSynThread">
+    	<property name="redisRelationshipService">
+    		<ref bean="redisRelationshipService"/>
+    	</property>
+    	<property name="userAdminMapper">
+    		<ref bean="userAdminMapper"/>
+    	</property>
+    </bean>
+    
+    <bean id="threadManager" class="com.duanqu.manager.service.thread.ThreadManagerServiceImpl" init-method="startThreads">
+    	<property name="showTimesThread">
+    		<ref bean="showTimesThread"/>
+    	</property>
+    	<property name="relationShipThread">
+    		<ref bean="relationShipThread"/>
+    	</property>
+    </bean>
+    
+    <import resource="classpath:spring/applicationContextRedis.xml" />
+</beans>

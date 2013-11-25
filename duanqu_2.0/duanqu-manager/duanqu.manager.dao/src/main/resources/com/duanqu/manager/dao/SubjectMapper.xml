@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.manager.dao.SubjectMapper">
+
+
+	<insert id="insertSubject" parameterType="SubjectModel" useGeneratedKeys="true" keyProperty="sid">
+		insert into tab_subject_info
+		(title,video_url,thumbnails_url,img_url,explain_url,inner_param,description,create_time)
+		values(#{title},#{videoUrl},#{thumbnailsUrl},#{imgUrl},#{explainUrl},#{innerParam},#{description},#{createTime})
+	</insert>
+
+	<select id="querySubjectList"
+		parameterType="com.duanqu.manager.submit.ManagerSubjectSubmit"
+		resultType="Map">
+		select
+		a.sid,a.title,a.video_url,a.thumbnails_url,a.img_url,a.explain_url,a.inner_param,a.description,FROM_UNIXTIME(a.create_time/1000)
+		cjsj,IFNULL(b.zs,0) zs from tab_subject_info a LEFT JOIN( select sid,count(*)
+		zs from tab_subject_content GROUP BY sid ) b ON a.sid=b.sid where 1=1
+		<if test="title != null and '' != title">   
+           <![CDATA[   
+              AND a.title like '%${title}%'   
+           ]]>
+		</if>
+		limit #{pageStart},#{pageSize}
+	</select>
+	
+	<select id="querySubjectListCount" parameterType="com.duanqu.manager.submit.ManagerSubjectSubmit" resultType="Long">
+	select count(*) from tab_subject_info a where 1=1
+	<if test="title != null and '' != title">   
+           <![CDATA[   
+              AND a.title like '%${title}%'   
+           ]]>
+	</if>
+	</select>
+	
+	
+	
+	<delete id="deleteSubject" parameterType="int">
+	delete from tab_subject_info where sid=#{sid}
+	</delete>
+
+
+
+
+
+
+
+</mapper>
+
+

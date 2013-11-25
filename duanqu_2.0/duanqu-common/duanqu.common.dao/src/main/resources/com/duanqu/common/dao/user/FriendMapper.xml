@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.common.dao.user.FriendMapper">
+	<insert id="insertOpenFriend" parameterType="OpenFriend">
+		INSERT INTO `tab_user_3thfriend`
+		(
+		`uid`,
+		`open_type`,
+		`open_uid`,
+		`open_nickname`)
+		VALUES
+		(
+		#{uid},
+		#{openType},
+		#{openUserId},
+		#{openNickName}
+		);
+	</insert>
+	
+	<select id="queryOpenFriendListCount" resultType="int" >
+	select count(*) from tab_user_3thfriend 
+	</select>
+	
+	<select id="queryOpenFriendList" parameterType="Map" resultType="OpenFriend">
+	SELECT id,uid,open_type openType,open_uid openUserId,open_nickname openNickName,avatar_url avatarUrl,open_username openUserName,is_matched isMatched,matched_uid matchedUid FROM tab_user_3thfriend
+	limit #{pageStart},#{pageSize}
+	</select>
+	
+	<select id="queryUserMobilesListCount" resultType="int" >
+	select count(*) from tab_user_mobiles 
+	</select>
+	
+	<select id="queryUserMobilesList" parameterType="Map" resultType="OpenFriend">
+	select id,uid, 3 as openType, mobile as openUserId,name as openNickName,is_matched as isMatched,matched_uid as matchedUid from tab_user_mobiles
+	limit #{pageStart},#{pageSize}
+	</select>
+	
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.manager.dao.BannerMapper">
+
+	<select id="queryBannerInfoModels" parameterType="com.duanqu.manager.submit.ManagerBannerSubmit"
+		resultType="BannerInfoModel">
+		select bid,title,img_url imgUrl,banner_type bannerType,create_time
+		createTime,inner_param innerUrl,order_num orderNum from
+		tab_banner_info order by create_time desc
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryBannerInfoModelsCount" parameterType="com.duanqu.manager.submit.ManagerBannerSubmit"
+		resultType="Long">
+		select count(*) from tab_banner_info
+	</select>
+
+	<select id="queryBannerList" resultType="BannerInfoModel">
+		select bid,title,img_url imgUrl,banner_type bannerType,create_time
+		createTime,inner_param innerUrl,order_num orderNum from
+		tab_banner_info order by order_num asc
+	</select>
+
+	<insert id="insertBannerInfo" parameterType="BannerInfoModel">
+		insert into
+		tab_banner_info(title,img_url,banner_type,inner_param,order_num,create_time)
+		values(#{title},#{imgUrl},#{bannerType},#{innerUrl},#{orderNum},#{createTime})
+	</insert>
+
+	<update id="updateBannerInfoOrderNum" parameterType="BannerInfoModel">
+		update tab_banner_info set order_num=#{orderNum} where bid=#{bid}
+	</update>
+
+	<delete id="deleteBannerInfo" parameterType="Long">
+		delete from tab_banner_info where bid=#{bid}
+	</delete>
+	
+	
+
+
+
+
+
+
+
+</mapper>
+
+

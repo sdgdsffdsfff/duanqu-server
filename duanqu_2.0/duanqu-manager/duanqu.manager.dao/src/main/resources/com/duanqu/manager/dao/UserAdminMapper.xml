@@ -1,0 +1,851 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.manager.dao.UserAdminMapper">
+
+	<resultMap type="OpenFriend" id="result_openfriend">
+		<result property="openType" column="open_type" />
+		<result property="openUserId" column="open_uid" />
+		<result property="openNickName" column="open_nickname" />
+		<result property="openUserName" column="open_username" />
+		<result property="avatarUrl" column="avatar_url" />
+	</resultMap>
+
+	<select id="selectUserAdminModel" parameterType="UserAdminModel"
+		resultType="UserAdminModel">
+		select * from tab_admin_user a where a.username=#{username} and
+		a.password=#{password}
+	</select>
+
+	<select id="queryUserList"
+		parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="com.duanqu.manager.submit.ManagerUserForm">
+		select b.*,c.nrs,c.fxs from ( select a.uid,a.avatar_url as
+		avatarUrl,a.nick_name nickName,a.create_time
+		createTime,a.last_login_time
+		lastLoginTime,a.mobile,a.status,a.follow_num
+		followNum,a.fans_num fansNum,a.fans_falsenum
+		fansFalseNum,a.friend_num friendNum,a.is_authentication
+		isAuthentication from tab_user_info a where a.role_id=3
+		<if test="nickname != null and '' != nickname">
+			<![CDATA[   
+              AND a.nick_name like '%${nickname}%'   
+           ]]>
+		</if>
+		<if
+			test="isAuthentication != null and '' != isAuthentication">
+			<![CDATA[   
+              AND a.is_authentication = #{isAuthentication} 
+           ]]>
+		</if>
+
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND a.status = #{zt}   
+           ]]>
+		</if>
+		<if test="pxtj == null or '' == pxtj">
+			<![CDATA[   
+              ORDER BY a.create_time DESC
+           ]]>
+		</if>
+
+		<if test="pxtj =='follow_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY a.follow_num DESC
+           ]]>
+		</if>
+		<if test="pxtj =='follow_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY a.follow_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='fans_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY a.fans_num DESC
+           ]]>
+		</if>
+		<if test="pxtj =='fans_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY a.fans_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='friend_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY a.friend_num DESC
+           ]]>
+		</if>
+		<if test="pxtj =='friend_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY a.friend_num ASC
+           ]]>
+		</if>
+		limit #{pageStart},#{pageSize} ) b LEFT JOIN (select
+		uid,count(*)
+		nrs,sum(sinashare_falsenum+sinashare_num+quanshare_falsenum+quanshare_num)
+		fxs from tab_content_info where c_status in (0,4) GROUP BY uid)
+		c ON b.uid=c.uid
+	</select>
+
+
+	<select id="queryUserListNrs"
+		parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="com.duanqu.manager.submit.ManagerUserForm">
+
+		select c.*,b.nrs,b.fxs from ( select uid,count(*)
+		nrs,sum(sinashare_falsenum+sinashare_num+quanshare_falsenum+quanshare_num)
+		fxs from tab_content_info where c_status in (0,4) GROUP BY uid
+		<if test="pxtj =='nrs' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY nrs DESC 
+           ]]>
+		</if>
+		<if test="pxtj =='nrs' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY nrs ASC 
+           ]]>
+		</if>
+
+		<if test="pxtj =='fxs' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY fxs DESC 
+           ]]>
+		</if>
+		<if test="pxtj =='fxs' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY fxs ASC 
+           ]]>
+		</if>
+		limit #{pageStart},#{pageSize} ) b RIGHT JOIN (select
+		a.uid,a.avatar_url as avatarUrl,a.nick_name
+		nickName,a.create_time createTime,a.last_login_time
+		lastLoginTime,a.mobile,a.status,a.follow_num
+		followNum,a.fans_num fansNum,a.fans_falsenum
+		fansFalseNum,a.friend_num friendNum,a.is_authentication
+		isAuthentication from tab_user_info a where a.role_id=3
+		<if test="nickname != null and '' != nickname">
+			<![CDATA[   
+              AND a.nick_name like '%${nickname}%'   
+           ]]>
+		</if>
+
+		<if
+			test="isAuthentication != null and '' != isAuthentication">
+			<![CDATA[   
+              AND a.is_authentication = #{isAuthentication} 
+           ]]>
+		</if>
+
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND a.status = #{zt}   
+           ]]>
+		</if>
+		) c ON b.uid=c.uid
+		<if test="pxtj =='nrs' and pxlx=='DESC'">
+			<![CDATA[   
+             ORDER BY b.nrs DESC
+           ]]>
+		</if>
+		<if test="pxtj =='nrs' and pxlx=='ASC'">
+			<![CDATA[   
+             ORDER BY b.nrs ASC
+           ]]>
+		</if>
+		<if test="pxtj =='fxs' and pxlx=='DESC'">
+			<![CDATA[   
+             ORDER BY b.fxs DESC
+           ]]>
+		</if>
+		<if test="pxtj =='fxs' and pxlx=='ASC'">
+			<![CDATA[   
+             ORDER BY b.fxs ASC
+           ]]>
+		</if>
+		limit #{pageStart},#{pageSize}
+	</select>
+
+
+
+
+
+
+
+
+
+
+	<select id="queryUserListCount"
+		parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="long">
+		select count(*) from tab_user_info m where m.role_id=3
+		<if test="nickname != null and '' != nickname">
+			<![CDATA[   
+              AND m.nick_name like '%${nickname}%'   
+           ]]>
+		</if>
+
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND m.status = #{zt}   
+           ]]>
+		</if>
+
+	</select>
+
+	<select id="queryUserListM"
+		parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="Map">
+		<include refid="userlistidm" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryUserListMCount"
+		parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="long">
+		select count(*) from(
+		<include refid="userlistidm" />
+		) h
+	</select>
+
+	<!-- <sql id="userlistid"> select m.*,n.open_type from ( select * from tab_user_info 
+		c left join(select uid userid, count(*) gzs, sum(if(is_friend=1,1,0)) hys 
+		from tab_user_friend group by uid) a on c.uid=a.userid left join( select 
+		fuid userid2, sum(if(is_true=1,1,0)) zfss, sum(if(is_true=1,0,1)) jfss from 
+		tab_user_friend group by fuid) b on c.uid=b.userid2 ) m LEFT JOIN tab_user_bind 
+		n on m.uid=n.uid where m.role_id=3 <if test="nickname != null and '' != nickname"> 
+		<![CDATA[ AND m.nick_name like '%${nickname}%' ]]> </if> <if test="userbind 
+		!= null and '' != userbind"> <![CDATA[ AND n.open_type = #{userbind} ]]> 
+		</if> <if test="zt != null and '' != zt"> <![CDATA[ AND m.status = #{zt} 
+		]]> </if> </sql> -->
+
+	<sql id="userlistidm">
+
+		select * from tab_user_info c left join(select uid userid,
+		count(*) gzs, sum(if(is_friend=1,1,0)) hys from tab_user_friend
+		group by uid) a on c.uid=a.userid left join( select fuid
+		userid2, sum(if(is_true=1,1,0)) zfss, sum(if(is_true=1,0,1))
+		jfss from tab_user_friend group by fuid) b on c.uid=b.userid2
+		where 1=1
+		<if test="nickname != null and '' != nickname">
+			<![CDATA[   
+              AND c.nick_name '%${nickname}%'    
+           ]]>
+		</if>
+		<if test="usertype != null and '' != usertype">
+			<![CDATA[   
+              AND c.role_id = #{usertype}   
+           ]]>
+		</if>
+		<if test="userbind != null and '' != userbind">
+			<![CDATA[   
+              AND c.mobile is not null
+           ]]>
+		</if>
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND c.status = #{zt}   
+           ]]>
+		</if>
+
+	</sql>
+
+	<insert id="insertUserreCommend"
+		parameterType="UserRecommendModel">
+		insert into
+		tab_editor_userrecommend(uid,reason,type,create_time)
+		values(#{uid},#{reason},#{type},#{create_time})
+	</insert>
+
+	<select id="getUserRecommend" parameterType="long"
+		resultType="UserRecommendModel">
+		select * from tab_editor_userrecommend where uid=#{uid}
+	</select>
+
+	<update id="updateUserRecommend"
+		parameterType="UserRecommendModel">
+		update tab_editor_userrecommend set create_time=#{create_time}
+		where uid=#{uid}
+	</update>
+
+	<!-- <select id="selectHotUserList" resultType="Long"> select uid from ( 
+		select a.uid,a.status,(IFNULL(b.fss,0)*0.6+IFNULL(c.lcf,0)*0.4) as countNum 
+		from tab_user_info a left join ( select fuid,count(*) fss from tab_user_friend 
+		GROUP BY fuid) b on a.uid=b.fuid left join ( select uid,sum(like_num+like_falsenum+comment_num+comment_falsenum+forward_num+forward_falsenum) 
+		as lcf from tab_content_info GROUP BY uid) c on a.uid=c.uid where a.status=1 
+		) x where uid > 1 order by countNum desc,uid desc limit 100 </select> -->
+	<!-- <select id="selectHotUserList" resultType="Long"> select f.*,u.nick_name 
+		from( select d.* , d.fss * 0.6 + d.lcf * 0.4 as zs from( select c.uid, sum(fss) 
+		as fss , sum(lcf) as lcf from( select b.* from ( select fuid as uid ,count(*) 
+		as fss,0 as lcf from tab_user_friend where fuid > 1 GROUP BY fuid order by 
+		count(*) desc limit 200) b union all select a.* from (select uid,0 as fss 
+		,sum(like_num+like_falsenum+comment_num+comment_falsenum+forward_num+forward_falsenum) 
+		as lcf from tab_content_info where uid > 1 GROUP BY uid order by sum(like_num+like_falsenum+comment_num+comment_falsenum+forward_num+forward_falsenum) 
+		desc limit 200 )a ) c group by c.uid) d order by d.fss * 0.6 + d.lcf * 0.4 
+		desc limit 200) f left join tab_user_info u on u.uid = f.uid where u.status 
+		= 1 </select> -->
+	<select id="selectHotUserList" resultType="Long"
+		parameterType="Long">
+		<!-- 
+			SELECT m.uid from (
+			select uid,(fans_num+fans_falsenum) fansCount from tab_user_info a
+			where
+			a.status=1 and uid>1 and not exists (select 1 from tab_set_userlist c where a.uid=c.uid)) m LEFT JOIN(
+			select uid,count(*) nrs from
+			tab_content_info b where b.c_status=0 and
+			b.is_private=0 and b.uid>1
+			GROUP BY uid ) n on m.uid=n.uid  ORDER BY
+			(IFNULL(n.nrs,0)*3
+			+m.fansCount) DESC LIMIT 302
+		-->
+		<!--  
+			select a.uid from tab_user_info a where a.status=1 and a.uid>1 and not exists (select 1 from tab_set_userlist c where a.uid=c.uid)
+			order by (fans_num+fans_falsenum) desc,create_time asc limit 302
+		-->
+		select a.uid from tab_user_info a LEFT JOIN( select
+		m.uid,(sum(IFNULL(n.xhs,0))+sum(IFNULL(x.fxs,0)))*5 as zs from
+		tab_content_info m LEFT JOIN( select cid,count(*) xhs from
+		tab_user_likecontent GROUP BY cid ) n ON m.cid=n.cid LEFT JOIN(
+		select cid,count(*) fxs from tab_log_sharecontent where flag=1
+		GROUP BY cid ) x ON m.cid=x.cid where m.is_private=0 and
+		m.c_status in (0,4) and m.uid>1 and
+		<![CDATA[
+         m.upload_time >=#{time}
+        ]]>
+		GROUP BY m.uid ) b ON a.uid=b.uid where a.status=1 and a.uid>1
+		and a.uid not in (select uid from tab_set_userlist) ORDER BY
+		((a.fans_num+a.fans_falsenum)*0.5+IFNULL(b.zs,0)) DESC LIMIT 302
+	</select>
+	<insert id="inserOpenFriend" parameterType="OpenFriend">
+		insert into tab_user_3thfriend (uid, open_type, open_uid,
+		open_nickname, open_username, avatar_url ) values( #{uid},
+		#{openType}, #{openUserId}, #{openNickName}, #{openUserName},
+		#{avatarUrl} )
+	</insert>
+
+	<parameterMap id="clientParameterMap" type="Map">
+		<parameter property="p_exectype" jdbcType="INTEGER"
+			javaType="java.lang.Integer" mode="IN" />
+		<parameter property="p_functype" jdbcType="INTEGER"
+			javaType="java.lang.Integer" mode="IN" />
+		<parameter property="p_uid" jdbcType="BIGINT"
+			javaType="java.lang.Long" mode="IN" />
+	</parameterMap>
+
+	<update id="updateThfriend" parameterMap="clientParameterMap"
+		statementType="CALLABLE">
+		<![CDATA[
+     {call Proc_match_UserFriendData(?, ?, ?)}  
+     ]]>
+	</update>
+
+	<select id="selectOpenFriend" parameterType="OpenFriend"
+		resultMap="result_openfriend">
+		select * from tab_user_3thfriend where uid=#{uid} and
+		open_type=#{openType} and open_uid=#{openUserId} limit 1
+	</select>
+
+	<select id="queryBindModelList" resultType="BindModel">
+		select uid,open_type as openType,open_uid openUid,access_token
+		accessToken from tab_user_bind
+	</select>
+
+	<select id="queryOpenFriends" resultType="OpenFriend">
+		select uid, matched_uid as matchedUid,open_type as
+		openType,open_uid as openUserId,open_nickname as
+		openNickName,open_username as openUserName,avatar_url as
+		avatarUrl,is_matched as isMatched from tab_user_3thfriend where
+		is_matched = 2
+	</select>
+
+	<update id="updateOpenFriend">
+		update tab_user_3thfriend set is_matched=1 where is_matched=2
+	</update>
+
+	<insert id="insertUserMessage" parameterType="MessageModel"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into tab_user_message (uid, rec_uid, message_text,
+		create_time, is_delete, is_new, type ) values (#{uid},
+		#{recUid}, #{messageText}, #{createTime}, #{isDelete}, #{isNew},
+		#{type} )
+	</insert>
+
+	<update id="updateUserJy"
+		parameterType="com.duanqu.manager.submit.ManagerUserSubmit">
+		update tab_user_info set
+		status=0,ban_endtime=#{banEndtime},ban_text=#{banText} where
+		uid=#{uid}
+	</update>
+
+	<update id="updateUserNormal" parameterType="Long">
+		update tab_user_info set status=1 where uid=#{uid}
+	</update>
+
+	<update id="updateUserNormalAll" parameterType="Long">
+		update tab_user_info set status=1 where status=0 and
+		<![CDATA[
+     ban_endtime<=#{endTime}
+     ]]>
+	</update>
+
+	<select id="queryUserJyList" parameterType="Long"
+		resultType="Long">
+		select uid from tab_user_info where status=0 and
+		<![CDATA[
+     ban_endtime<=#{endTime}
+     ]]>
+	</select>
+
+
+	<select id="queryMjUserList"
+		parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="com.duanqu.manager.submit.ManagerUserForm">
+		select x.*,m.xpls,m.maxtime from ( select a.uid,a.avatar_url
+		avatarUrl,a.nick_name nickName,a.create_time
+		createTime,a.last_login_time
+		lastLoginTime,a.mobile,a.status,a.follow_num
+		followNum,a.fans_num fansNum,a.fans_falsenum
+		fansFalseNum,a.friend_num friendNum from tab_user_info a where
+		a.role_id=4
+		<if test="nickname != null and '' != nickname">
+			<![CDATA[   
+              AND a.nick_name  like '%${nickname}%'    
+           ]]>
+		</if>
+		) x LEFT JOIN ( SELECT n.uid,sum(xpls) xpls,max(n.maxcreatetime)
+		maxtime from( select y.uid, count(1) xpls, max(x.create_time)
+		maxcreatetime from tab_content_comment x,tab_content_info y
+		where x.cid=y.cid and x.is_new=1 and x.root_id=0 and
+		exists(select 1 from tab_user_info a where a.role_id=4 and
+		a.uid=y.uid) GROUP BY y.uid UNION select reply_uid uid,count(1)
+		xpls,max(create_time) maxcreatetime from tab_content_comment c
+		where is_new=1 and reply_uid!=0 and exists(select 1 from
+		tab_user_info a where a.role_id=4 and a.uid=c.reply_uid) GROUP
+		BY reply_uid ) n GROUP BY n.uid) m ON x.uid=m.uid ORDER BY
+		m.maxtime desc,x.createTime desc limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryMjUserListCount"
+		parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="long">
+		select count(*) from tab_user_info a where a.role_id=4
+		<if test="nickname != null and '' != nickname">
+			<![CDATA[   
+              AND a.nick_name  like '%${nickname}%'    
+           ]]>
+		</if>
+	</select>
+	<!-- <sql id="mjUserListid"> select c.uid,c.nick_name,c.avatar_url,FROM_UNIXTIME(SUBSTR(c.create_time,1,LENGTH(c.create_time)-3)) 
+		zcsj,a.gzs,a.hys,b.zfss,b.jfss,i.comment_num, IFNULL(m.xpls,0) xpls,m.maxcreatetime 
+		from tab_user_info c left join( select uid userid, count(*) gzs, sum(if(is_friend=1,1,0)) 
+		hys from tab_user_friend group by uid) a on c.uid=a.userid left join( select 
+		fuid userid2, sum(if(is_true=1,1,0)) zfss, sum(if(is_true=1,0,1)) jfss from 
+		tab_user_friend group by fuid) b on c.uid=b.userid2 LEFT JOIN( select y.uid, 
+		sum(comment_num+comment_falsenum) comment_num from tab_content_info y GROUP 
+		BY y.uid) i on c.uid=i.uid LEFT JOIN( select y.uid, count(1) xpls, max(x.create_time) 
+		maxcreatetime from tab_content_comment x,tab_content_info y where x.cid=y.cid 
+		and x.is_new=1 and (x.root_id=0 or x.reply_uid=y.uid) GROUP BY y.uid)m on 
+		c.uid=m.uid where c.role_id=4 <if test="nickname != null and '' != nickname"> 
+		<![CDATA[ AND c.nick_name like '%${nickname}%' ]]> </if> ORDER BY m.maxcreatetime 
+		desc,c.create_time desc </sql> -->
+	<select id="getUserModelByUid" parameterType="Long"
+		resultType="UserModel">
+		select uid,nick_name nickName,avatar_url avatarUrl from
+		tab_user_info where uid=#{uid}
+	</select>
+
+
+
+
+	<insert id="insertUserInfo" parameterType="UserModel">
+		INSERT INTO tab_user_info (uid, nick_name, avatar_url,
+		create_time, signature, background_url, role_id ) VALUES (
+		#{uid}, #{nickName}, #{avatarUrl}, #{createTime}, #{signature},
+		#{backgroundUrl}, #{roleId} );
+	</insert>
+
+	<select id="queryMobilesList" resultType="Long">
+		<![CDATA[   
+		select uid from tab_user_info where mobile  <>''
+	  ]]>
+	</select>
+
+
+	<select id="queryMobiles" resultType="OpenFriend">
+		select uid,matched_uid as matchedUid,3 as openType,name as
+		openNickName,mobile openUserId ,is_matched as isMatched from
+		tab_user_mobiles where is_matched=2
+	</select>
+
+
+	<update id="updateMobile">
+		update tab_user_mobiles set is_matched=1 where is_matched=2
+	</update>
+
+	<update id="updateComment" parameterType="Long">
+
+		update tab_content_comment x join ( select a.id from
+		tab_content_comment a,tab_user_info b,tab_content_info c where
+		a.cid=c.cid and a.uid=b.uid and c.uid=#{uid} and a.is_new=1 and
+		a.root_id=0 UNION select a.id from tab_content_comment
+		a,tab_user_info b,tab_content_info c where a.cid=c.cid and
+		a.uid=b.uid and a.reply_uid=#{uid} and a.is_new=1 and
+		a.root_id!=0 ) y on y.id=x.id set is_new=0
+	</update>
+
+
+	<select id="queryMessageList"
+		parameterType="com.duanqu.common.submit.MMessageSubmit"
+		resultType="Map">
+		<include refid="messageList" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryMessageListCount"
+		parameterType="com.duanqu.common.submit.MMessageSubmit"
+		resultType="long">
+		select count(*) from(
+		<include refid="messageList" />
+		) h
+	</select>
+
+	<sql id="messageList">
+		SELECT
+		m.id,m.uid,m.rec_uid,m.message_text,FROM_UNIXTIME(SUBSTR(m.create_time,1,LENGTH(m.create_time)-3))
+		fssj,n.nick_name,n.avatar_url from (select * from (SELECT * from
+		tab_user_message where 1=1
+		<if test="messageText != null and '' != messageText">
+			<![CDATA[   
+              AND message_text like '%${messageText}%'   
+           ]]>
+		</if>
+		<if test="createTimeQL != null and '' != createTimeQL">
+			<![CDATA[   
+              AND create_time >=#{createTimeQL}
+           ]]>
+		</if>
+		<if test="createTimeZL != null and '' != createTimeZL">
+			<![CDATA[   
+              AND create_time <=#{createTimeZL}
+           ]]>
+		</if>
+		ORDER BY create_time DESC) b GROUP BY type) m ,tab_user_info n
+		where m.uid=n.uid and ((m.uid=1 and m.is_delete=0) or
+		(m.rec_uid=1 and m.is_delete_rec=0)) ORDER BY m.is_new
+		desc,m.create_time desc
+	</sql>
+
+	<update id="updateMessage" parameterType="long">
+		update tab_user_message set is_new=0 where id=#{messageId}
+	</update>
+
+	<update id="deleteMessage" parameterType="long">
+		update tab_user_message set is_delete=1 where id=#{messageId}
+	</update>
+
+	<update id="deleteMessageRec" parameterType="long">
+		update tab_user_message set is_delete_rec=1 where
+		id=#{messageId}
+	</update>
+
+
+	<select id="queryUserModels" resultType="UserModel"
+		parameterType="Map">
+		select uid,mobile from tab_user_info where status in (1,2) and
+		role_id=3 limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="getUserList" resultType="Long" parameterType="Map">
+		select uid from tab_user_info where status in (1,2) and
+		role_id=3 and uid>1 order by uid limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryUserModelsCount" resultType="long">
+		select count(*) from tab_user_info where status in (1,2) and
+		role_id=3 and uid >1
+	</select>
+
+	<select id="queryFeedBackModels" resultType="Map"
+		parameterType="com.duanqu.common.submit.MFeedBackSubmit">
+		<include refid="feedbackList" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryFeedBackModelsCount"
+		parameterType="com.duanqu.common.submit.MFeedBackSubmit"
+		resultType="long">
+		select count(*) from(
+		<include refid="feedbackList" />
+		) h
+	</select>
+	<sql id="feedbackList">
+		select
+		a.id,a.uid,a.feedback_text,a.screenshot_url,FROM_UNIXTIME(SUBSTR(a.create_time,1,LENGTH(a.create_time)-3))
+		fksj,a.is_check,b.nick_name,b.avatar_url from tab_user_feedback
+		a,tab_user_info b where a.uid=b.uid and a.is_check in(0,1) ORDER
+		BY a.create_time desc
+	</sql>
+
+	<update id="updateFeedBackModel" parameterType="FeedBackModel">
+		update tab_user_feedback set is_check=#{isCheck} where id=#{id}
+	</update>
+
+
+	<update id="updateCommentDqj" parameterType="Long">
+		update tab_content_comment set is_new=0 where id in ( select
+		a.id from ( select id from tab_content_comment where cid=#{cid}
+		and (root_id=0 or reply_uid=1) and is_new=1 ) a )
+	</update>
+
+	<select id="insertSendAllMessage" parameterType="MessageModel">
+		insert into
+		tab_user_message(uid,rec_uid,message_text,create_time,type)
+		select 1,uid,#{messageText},#{createTime},CONCAT('1','|',uid)
+		from tab_user_info where role_id=3 and status in (1,2)
+		<![CDATA[ 
+	and uid <>1
+	]]>
+	</select>
+
+	<select id="queryMjByJfs" resultType="Long" parameterType="Long">
+		SELECT a.uid from tab_user_info a WHERE a.role_id=4 and
+		a.status=1 and NOT EXISTS (SELECT 1 from tab_user_friend b WHERE
+		fuid=#{uid} and a.uid=b.uid )
+	</select>
+
+	<insert id="insertFalseFriend" parameterType="FriendModel">
+		insert into
+		tab_user_friend(uid,fuid,create_time,is_friend,is_true)
+		values(#{uid},#{fid},#{createTime},#{isFriend},#{isTrue})
+	</insert>
+
+
+	<select id="getFriendModel" parameterType="FriendModel"
+		resultType="FriendModel">
+		select uid,fuid fid,is_friend isFriend,is_true isTrue from
+		tab_user_friend where uid=#{uid} and fuid=#{fid}
+	</select>
+
+	<update id="updateIsFriend" parameterType="FriendModel">
+		update tab_user_friend set is_friend=#{isFriend} where
+		uid=#{fid} and fuid=#{uid}
+	</update>
+
+	<update id="updateUserGzs" parameterType="Map">
+		update tab_user_info set follow_num=follow_num+#{num} where
+		uid=#{uid}
+	</update>
+
+	<update id="updateUserFans" parameterType="Map">
+
+		update tab_user_info set fans_num=#{num} where uid=#{uid}
+	</update>
+
+	<update id="updateUserJfss" parameterType="Map">
+		update tab_user_info set fans_falsenum=fans_falsenum+#{num}
+		where uid=#{uid}
+	</update>
+
+	<update id="updateUserHys" parameterType="Map">
+		update tab_user_info set friend_num=friend_num+#{num} where
+		uid=#{uid}
+	</update>
+
+	<select id="queryTsUserList"
+		parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="Map">
+		select
+		a.uid,a.nick_name,a.avatar_url,a.follow_num,a.fans_num,a.friend_num,FROM_UNIXTIME(b.create_time/1000)
+		tssj,b.type,b.reason from tab_user_info
+		a,tab_editor_userrecommend b where a.uid=b.uid
+		<if test="nickname != null and '' != nickname">
+			<![CDATA[   
+              AND a.nick_name  like '%${nickname}%'    
+           ]]>
+		</if>
+		<if test="usertype != null and '' != usertype">
+			<![CDATA[   
+              AND b.type=#{usertype}   
+           ]]>
+		</if>
+		order by b.create_time desc limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryTsUserListCount"
+		parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="Long">
+		select count(*) from tab_user_info a,tab_editor_userrecommend b
+		where a.uid=b.uid
+		<if test="nickname != null and '' != nickname">
+			<![CDATA[   
+              AND a.nick_name  like '%${nickname}%'    
+           ]]>
+		</if>
+		<if test="usertype != null and '' != usertype">
+			<![CDATA[   
+              AND b.type=#{usertype}   
+           ]]>
+		</if>
+	</select>
+
+	<delete id="deleteUserRecommend" parameterType="Map">
+		delete from tab_editor_userrecommend where uid=#{uid} and
+		type=#{type}
+	</delete>
+
+	<select id="queryMessageDetail" parameterType="MessageModel"
+		resultType="Map">
+		select
+		a.uid,a.rec_uid,a.id,a.is_new,a.message_text,FROM_UNIXTIME(SUBSTR(a.create_time,1,LENGTH(a.create_time)-3))
+		fssj,b.nick_name,b.avatar_url from tab_user_message
+		a,tab_user_info b where a.uid=b.uid and ((a.uid=#{uid} and
+		a.rec_uid=1 and a.is_delete_rec=0) or(a.uid=1 AND
+		a.rec_uid=#{uid} and a.is_delete=0)) ORDER BY a.create_time ASC
+	</select>
+
+	<update id="updateMessageIsOld" parameterType="MessageModel">
+		update tab_user_message set is_new=0 where (uid=1 and
+		rec_uid=#{uid}) or(uid=#{uid} and rec_uid=1)
+	</update>
+
+	<update id="updateUserRelationshipCount" parameterType="Map">
+		update tab_user_info set fans_num = #{fansCount}-fans_falsenum,
+		friend_num = #{friendsCount},follow_num = #{followsCount} where
+		uid=#{uid}
+	</update>
+
+	<select id="updateUserStatus" parameterType="UserModel">
+
+		update tab_user_info set status=#{status} where uid=#{uid}
+	</select>
+
+	<insert id="insertSetUser" parameterType="SetUserModel">
+		insert into tab_set_userlist(uid,order_num,create_time)
+		values(#{uid},#{orderNum},#{createTime})
+	</insert>
+
+	<select id="getList" resultType="Long">
+		select uid from tab_user_info where uid>1 order by fans_num desc
+	</select>
+
+	<select id="querySetUserModels" resultType="SetUserModel">
+		select b.uid,b.order_num orderNum,b.create_time createTime from
+		tab_user_info a,tab_set_userlist b where a.uid=b.uid and
+		a.status=1 order by b.order_num asc
+	</select>
+
+	<update id="updateSetUser" parameterType="SetUserModel">
+		update tab_set_userlist set order_num=#{orderNum} where
+		uid=#{uid}
+	</update>
+
+	<select id="getSetUserModel" parameterType="Long"
+		resultType="SetUserModel">
+		select uid,order_num orderNum,create_time createTime from
+		tab_set_userlist where uid=#{uid}
+	</select>
+
+	<select id="queryTsHotUserList" resultType="Map"
+		parameterType="com.duanqu.common.submit.MUserSubmit">
+		SELECT a.uid,a.nick_name nickName,a.avatar_url
+		avatarUrl,FROM_UNIXTIME(b.create_time/1000)
+		createTime,b.order_num orderNum from tab_user_info
+		a,tab_set_userlist b where a.uid=b.uid and a.status=1 ORDER BY
+		b.create_time DESC limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryTsHotUserListCount" resultType="Long"
+		parameterType="com.duanqu.common.submit.MUserSubmit">
+		SELECT count(*) from tab_user_info a,tab_set_userlist b where
+		a.uid=b.uid and a.status=1
+	</select>
+
+	<delete id="deleteTsHotUser" parameterType="Long">
+		delete from tab_set_userlist where uid=#{uid}
+	</delete>
+
+	<select id="selectFollows" parameterType="Long" resultType="Long">
+		select fuid from tab_user_friend where uid=#{uid}
+	</select>
+
+	<select id="selectFans" parameterType="Long" resultType="Long">
+		select uid from tab_user_friend where fuid=#{uid}
+	</select>
+
+
+	<insert id="insertTmp" parameterType="Map">
+		insert into tab_log_push(uid,type,create_time)
+		values(#{uid},#{type},#{createTime})
+	</insert>
+
+	<insert id="insertMessagePush" parameterType="MessagePushModel">
+		insert into tab_message_push
+		(type,inner_param,message_text,is_show,create_time)
+		values(#{type},#{innerParam},#{messageText},#{isShow},#{createTime})
+	</insert>
+
+	<select id="queryMessagePushList" parameterType="Long"
+		resultType="MessagePushModel">
+		select id,type,inner_param innerParam,message_text messageText
+		from tab_message_push where is_show=0 and
+		<![CDATA[ 
+		create_time<=#{createTime}
+	]]>
+	</select>
+
+	<update id="updateMessagePush" parameterType="int">
+		update tab_message_push set is_show=1 where id=#{id}
+	</update>
+
+	<update id="updateUserAuthentication" parameterType="Map">
+		update tab_user_info set
+		is_authentication=#{flag},authentication_reason=#{authenticationReason}
+		where uid=#{uid}
+	</update>
+
+	<select id="queryMessagePushHistoryList"
+		parameterType="com.duanqu.common.submit.MPushHistorySubmit"
+		resultType="MessagePushModel">
+		select id,type,inner_param innerParam,message_text
+		messageText,is_show isShow,FROM_UNIXTIME(create_time/1000)
+		createTimeStr from tab_message_push where 1=1
+		<if test="isShow != null and '' != isShow">
+			<![CDATA[   
+              AND is_show=#{isShow}  
+           ]]>
+		</if>
+		order by create_time desc limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryMessagePushHistoryListCount"
+		parameterType="com.duanqu.common.submit.MPushHistorySubmit"
+		resultType="long">
+		select count(*) from tab_message_push where 1=1
+		<if test="isShow != null and '' != isShow">
+			<![CDATA[   
+              AND is_show=#{isShow}  
+           ]]>
+		</if>
+	</select>
+
+
+	<delete id="deleteMessagePush"
+		parameterType="com.duanqu.common.submit.MPushHistorySubmit">
+		delete from tab_message_push where id=#{id}
+	</delete>
+
+	<select id="getAuthenticationReason" resultType="String"
+		parameterType="long">
+		select authentication_reason from tab_user_info where uid=#{uid}
+	</select>
+	
+	<select id="getRecommendReason" parameterType="UserRecommendModel" resultType="String">
+	select reason from tab_editor_userrecommend where uid=#{uid} and type=#{type}
+	</select>
+	
+	<update id="updateRecommendReason" parameterType="UserRecommendModel">
+	update  tab_editor_userrecommend set reason=#{reason} where uid=#{uid} and type=#{type}
+	</update>
+
+
+</mapper>
+
+

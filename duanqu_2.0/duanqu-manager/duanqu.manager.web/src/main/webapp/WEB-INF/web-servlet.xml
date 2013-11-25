@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" 
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:dwr="http://www.directwebremoting.org/schema/spring-dwr" 
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.directwebremoting.org/schema/spring-dwr     
+        classpath:spring-dwr-3.0.xsd"
+	default-autowire="byName">
+	<context:annotation-config /> 
+	
+	<mvc:annotation-driven />
+	<mvc:default-servlet-handler />
+	<context:component-scan base-package="com.duanqu.manager.web" />
+	
+	
+    <!--
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<beans:bean class="com.duanqu.client.interceptor.PerformanceMonitorInterceptor" />
+		</mvc:interceptor>
+		 
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<beans:bean class="com.duanqu.client.interceptor.AuthInterceptor">
+				<beans:property name="notInterceptorUrls">
+					<beans:set>
+						<beans:value>/duanqu/user/open/login</beans:value>
+						<beans:value>/duanqu/user/duanqu/login</beans:value>
+						<beans:value>/duanqu/user/open/bind</beans:value>
+						<beans:value>/duanqu/user/duanqu/register</beans:value>
+						<beans:value>/duanqu/test</beans:value>
+						<beans:value>/duanqu/test/load</beans:value>
+					</beans:set>
+				</beans:property>
+			</beans:bean>
+		</mvc:interceptor>
+		 
+	</mvc:interceptors>
+	-->
+	
+	
+	
+	<dwr:configuration />  
+    <dwr:annotation-config />  
+    <dwr:url-mapping />  
+    
+    <dwr:controller id="dwrController" debug="true">  
+    <dwr:config-param name="allowScriptTagRemoting"
+            value="true" />
+    <dwr:config-param name="crossDomainSessionSecurity"
+        value="false" />
+    </dwr:controller>
+   
+	
+  
+    <beans:bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+	 <beans:property name="order" value="3" /> 
+	  <beans:property value="true" name="alwaysUseFullPath"></beans:property>
+	  <beans:property name="mappings">
+	  <beans:props>
+	  <beans:prop key="/dwr/**">dwrController</beans:prop>
+	  </beans:props>
+	 </beans:property>
+	</beans:bean>
+	
+	
+	<beans:bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+    <beans:property name="order" value="1" />
+    </beans:bean>
+    <beans:bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping">
+    <beans:property name="order" value="2" />
+    </beans:bean>
+
+	
+    
+    
+    
+	<mvc:interceptors>
+	    <mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<beans:bean class="com.duanqu.manager.interceptor.LoginInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+	<beans:bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/pages/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven conversion-service="conversionService">
+	</annotation-driven>
+
+	<!--
+		Only needed because we install custom converters to support the
+		examples in the org.springframewok.samples.mvc.convert package
+	-->
+	<beans:bean id="conversionService"
+		class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+	</beans:bean>
+
+	<!--
+		Only needed because we require fileupload in the
+		org.springframework.samples.mvc.fileupload package
+	-->
+	<beans:bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
+
+<!-- 
+	<context:component-scan base-package="com.duanqu.client.web"
+		use-default-filters="false">
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<beans:bean id="swaggerConfiguration"
+		class="com.mangofactory.swagger.SwaggerConfiguration">
+		<beans:property name="basePath" value="http://localhost:8080/duanqu/" />
+		<beans:property name="apiVersion" value="1.0" />
+		<beans:property name="extensions">
+			<beans:bean class="com.mangofactory.swagger.SwaggerConfigurationExtension">
+				<beans:property name="ignorableParameterTypes">
+					<beans:list>
+						<beans:bean id="myClass" class="java.lang.Class"
+							factory-method="forName">
+							<beans:constructor-arg
+								value="org.springframework.web.util.UriComponentsBuilder" />
+						</beans:bean>
+					</beans:list>
+				</beans:property>
+			</beans:bean>
+		</beans:property>
+	</beans:bean>
+
+
+	<beans:bean id="documentationController"
+		class="com.mangofactory.swagger.spring.controller.DocumentationController">
+	</beans:bean>
+ -->
+</beans:beans>

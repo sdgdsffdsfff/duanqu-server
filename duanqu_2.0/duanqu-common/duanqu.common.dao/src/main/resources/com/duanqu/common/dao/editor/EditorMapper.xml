@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.common.dao.editor.EditorMapper">
+
+	<resultMap type="BannerInfoModel" id="result_bannerinfomodel">
+		<result property="imgUrl" column="img_url" />
+		<result property="bannerType" column="banner_type" />
+		<result property="isShow" column="is_show" />
+		<result property="createTime" column="create_time" />
+		<result property="innerUrl" column="inner_url" />
+	</resultMap>
+	<resultMap type="EditorTagModel" id="result_editortagmodel">
+		<result property="tagText" column="tag_text" />
+		<result property="tagType" column="tag_type" />
+		<result property="tagImage" column="tag_image" />
+		<result property="tagImageMore" column="tag_image_more" />
+		<result property="isShow" column="is_show" />
+		<result property="orderNum" column="order_num" />
+		<result property="createTime" column="create_time" />
+
+	</resultMap>
+
+	<resultMap type="EditorTalentModel" id="result_editortalentmodel">
+		<result property="createTime" column="create_time" />
+		<result property="infoId" column="info_id" />
+	</resultMap>
+
+
+	<insert id="insertActiveInfo" parameterType="ActiveInfoModel"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into tab_active_info
+		(active_title,
+		begin_time,
+		end_time,
+		create_time,
+		flag
+		)
+		values
+		(
+		#{activeTitle},
+		#{beginTime},
+		#{endTime},
+		#{createTime},
+		#{flag}
+		)
+	</insert>
+
+	<insert id="insertActiveContent" parameterType="ActiveContentModel">
+		insert into
+		tab_active_content
+		(active_id,
+		cid,
+		order_num
+		)
+		values
+		(
+		#{activeId},
+		#{cid},
+		#{orderNum}
+		)
+	</insert>
+
+	<insert id="insertEditorTag" parameterType="EditorTagModel">
+		insert into
+		tab_editor_recommendtag
+		(tag_text,
+		tag_type,
+		tag_image,
+		tag_image_more,
+		is_show,
+		order_num,
+		create_time,
+		width,
+		height
+		)
+		values
+		(
+		#{tagText},
+		#{tagType},
+		#{tagImage},
+		#{tagTmageMore},
+		#{isShow},
+		#{orderNum},
+		#{createTime},
+		#{width},
+		#{height}
+		)
+	</insert>
+
+	<insert id="insertEditorTalent" parameterType="EditorTalentModel">
+		insert into
+		tab_editor_talentlistdetail
+		(uid,
+		info_id,
+		create_time,
+		comment
+		)
+		values
+		(
+		#{uid},
+		#{infoId},
+		#{createTime},
+		#{comment}
+		)
+
+	</insert>
+
+	<insert id="insertBannerInfo" parameterType="BannerInfoModel">
+		insert into
+		tab_banner_info
+		(
+		title,
+		description,
+		img_url,
+		banner_type,
+		is_show,
+		create_time,
+		inner_url
+		)
+		values
+		(
+		#{title},
+		#{description},
+		#{imgUrl},
+		#{bannerType},
+		#{isShow},
+		#{createTime},
+		#{innerUrl}
+		)
+	</insert>
+
+	<update id="updateActiveContent" parameterType="ActiveContentModel">
+		update
+		tab_active_content set order_num=#{orderNum} where
+		active_id=#{activeId}
+	</update>
+
+	<delete id="deleteEditorTag" parameterType="int">
+		delete from
+		tab_editor_recommend_tag where id=#{id}
+	</delete>
+
+	<delete id="deleteEditorTalent" parameterType="int">
+		delete from
+		tab_editor_recommendtalent where id=#{id}
+	</delete>
+
+	<select id="queryBannerInfoModels" resultMap="result_bannerinfomodel">
+		select * from
+		tab_banner_info where is_show=1 ORDER BY create_time DESC;
+	</select>
+
+	<select id="queryEditorTagModels" resultMap="result_editortagmodel">
+		select * from
+		tab_editor_recommendtag order by order_num DESC;
+	</select>
+
+	<select id="queryTagInfo" resultType="Map">
+		<!-- select a.*,b.tag_text from ( select t.tid,sum(clcount) as clcountSum,count(*) 
+			as countNum,sum(clcount)/count(*) as avgNum from tab_content_tag t, (select 
+			cid,count(*) clcount from tab_user_likecontent group by cid) cl where t.cid=cl.cid 
+			group by t.tid ORDER BY avgNum desc LIMIT 0 ,200) a ,tab_tag_info b where 
+			a.tid=b.tid and not EXISTS (select tid from tab_tag_hot d where a.tid=d.tid) -->
+		select a.tag_text,b.* from tab_tag_info a,(select tid,count(*) zs from
+		tab_content_tag group by tid) b where a.tid=b.tid and not EXISTS
+		(select tid from tab_tag_hot d where b.tid=d.tid )
+		order by b.zs desc
+		LIMIT 500
+	</select>
+
+	<select id="queryEditorTalentModels" resultMap="result_editortalentmodel">
+		select * from tab_editor_talentlistdetail order by create_time desc
+	</select>
+
+
+	<insert id="insertEditorTalentInfo" parameterType="EditorTalentInfoModel">
+		insert into tab_editor_talentlistinfo(title,img_url,create_time)
+		values(#{title},#{imgUrl},#{createTime})
+	</insert>
+
+	<select id="queryEditorTalentInfoModels" resultType="EditorTalentInfoModel">
+		select id,title,img_url as imgUrl,status,create_time as createTime from
+		tab_editor_talentlistinfo where status=0 order by create_time DESC
+	</select>
+
+	<insert id=""></insert>
+
+
+
+</mapper>

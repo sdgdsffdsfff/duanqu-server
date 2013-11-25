@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.manager.dao.SysResourceMapper">
+
+
+  <select id="querySysResourceList" parameterType="com.duanqu.manager.submit.ManagerSysResourceSubmit" resultType="SysResourceModel">
+  select id,description,resource_url resourceUrl,resource_icon_url resourceIconUrl,type,create_time createTime from tab_sys_resource order by create_time Desc
+  limit #{pageStart},#{pageSize}
+  </select>
+  
+  <select id="querySysResourceCount" parameterType="com.duanqu.manager.submit.ManagerSysResourceSubmit" resultType="Long">
+  select count(*) from tab_sys_resource 
+  </select>
+  
+  <insert id="insertSysResourceModel" parameterType="SysResourceModel" useGeneratedKeys="true" keyProperty="id">
+  insert into tab_sys_resource (description,resource_url,resource_icon_url,resource_music_url,size,resource_md5,type,create_time) values(#{description},#{resourceUrl},#{resourceIconUrl},#{resourceMusicUrl},#{size},#{resourceMd5},#{type},#{createTime})
+  </insert>
+  
+  <delete id="deleteSysResourceModel" parameterType="Long">
+  delete from tab_sys_resource where id=#{id}
+  </delete>
+	
+
+	
+	
+	
+
+
+
+</mapper>
+
+

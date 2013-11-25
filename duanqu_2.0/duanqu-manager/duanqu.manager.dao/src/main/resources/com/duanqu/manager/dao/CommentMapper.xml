@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.manager.dao.CommentMapper">
+
+
+	<insert id="insertContentComment" parameterType="CommentModel">
+		insert into
+		tab_content_comment
+		(id,
+		uid,
+		cid,
+		comment_text,
+		reply_uid,
+		create_time,
+		comment_url,
+		prient_id,
+		root_id
+		)
+		values
+		(#{id},
+		#{uid},
+		#{cid},
+		#{commentText},
+		#{replyUid},
+		#{createTime},
+		#{commentUrl},
+		#{parentId},
+		#{rootId}
+		)
+	</insert>
+
+	<select id="queryUserList" parameterType="Long" resultType="Long">
+		select a.uid from tab_user_info a where a.role_id=4 and not EXISTS
+		(select 1 from tab_content_comment b where b.cid=#{cid} and
+		a.uid=b.uid)
+	</select>
+
+	<update id="updateContentInfo" parameterType="Map">
+		update
+		tab_content_info set comment_num=comment_num-#{num} where cid=#{cid}
+	</update>
+
+	<update id="updateContentInfoFalse" parameterType="Map">
+		update
+		tab_content_info set comment_falsenum=comment_falsenum-#{num} where
+		cid=#{cid}
+	</update>
+
+
+
+	<select id="queryMjCommentSubmits" parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="com.duanqu.manager.submit.ManagerCommentSubmit">
+		<include refid="mjcommentList" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryMjCommentSubmitsCount" parameterType="com.duanqu.common.submit.MUserSubmit"
+		resultType="long">
+		select count(*) from(
+		<include refid="mjcommentList" />
+		) h
+	</select>
+
+
+	<sql id="mjcommentList">
+		select c.video_url_hd videoUrlHd,c.thumbnails_url thumbnailsUrl,b.nick_name
+		nickName,b.avatar_url avatarUrl,a.uid,a.cid,
+		a.create_time createTime ,a.id ,a.comment_text commentText,a.root_id
+		rootId,a.reply_uid replyUid,a.prient_id prientId
+		from tab_content_comment a,tab_user_info b,tab_content_info c where
+		a.cid=c.cid and a.uid=b.uid
+		and(c.uid=#{uid} and a.is_new=1 and a.root_id=0)
+		UNION
+		select c.video_url_hd videoUrlHd,c.thumbnails_url thumbnailsUrl,b.nick_name
+		nickName,b.avatar_url avatarUrl,a.uid,a.cid,
+		a.create_time createTime ,a.id ,a.comment_text commentText,a.root_id
+		rootId,a.reply_uid replyUid,a.prient_id prientId
+		from tab_content_comment a,tab_user_info b,tab_content_info c where
+		a.cid=c.cid and a.uid=b.uid and a.reply_uid=#{uid} and a.is_new=1 and
+		a.reply_uid!=0
+
+	</sql>
+
+	<select id="queryDqjCommentSubmits" parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="com.duanqu.manager.submit.ManagerCommentSubmit">
+		<include refid="dqjcommentList" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryDqjCommentSubmitsCount" parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="long">
+		select count(*) from(
+		<include refid="dqjcommentList" />
+		) h
+	</select>
+
+
+	<sql id="dqjcommentList">
+		select c.video_url_hd videoUrlHd,c.thumbnails_url thumbnailsUrl,b.nick_name
+		nickName,b.avatar_url avatarUrl,a.uid,a.cid ,a.create_time createTime
+		,a.id ,a.comment_text commentText,a.root_id rootId,a.reply_uid
+		replyUid,a.prient_id prientId from tab_content_comment a,tab_user_info
+		b,tab_content_info c where a.cid=c.cid and a.uid=b.uid and
+		a.cid=#{cid} and a.is_new=1 and (a.root_id=0 or a.reply_uid=1 )
+		order by a.create_time desc
+	</sql>
+
+
+
+	<select id="getManagerCommentSubmit" parameterType="Long"
+		resultType="com.duanqu.manager.submit.ManagerCommentSubmit">
+		select b.nick_name nickName,b.avatar_url avatarUrl,b.uid,a.comment_text
+		commentText from tab_content_comment a,tab_user_info b where
+		a.uid=b.uid and a.id=#{id}
+	</select>
+
+	<delete id="deleteContentComment" parameterType="CommentModel">
+		delete from tab_content_comment where id=#{id}
+	</delete>
+	<delete id="deleteAllContentComment" parameterType="CommentModel">
+		delete from tab_content_comment where id=#{id} or root_id=#{id}
+	</delete>
+
+	<update id="updateCommentIsNew" parameterType="Long">
+		update tab_content_comment set is_new=0 where id=#{id}
+	</update>
+
+</mapper>
+
+

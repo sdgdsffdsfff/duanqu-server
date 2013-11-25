@@ -1,0 +1,983 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanqu.common.dao.content.ContentMapper">
+
+	<resultMap type="TagModel" id="result_tagmodel">
+		<result property="tagText" column="tag_text" />
+	</resultMap>
+	<select id="queryContentForms"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="com.duanqu.common.vo.ManagerContentForm">
+		<include refid="contentList" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryContentFormsTag"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="com.duanqu.common.vo.ManagerContentForm">
+		<include refid="contentListFromTag" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryContentFormsTagCount"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="Long">
+		select count(*) from tab_content_info c,tab_user_info
+		a,tab_content_tag b where c.uid=a.uid and c.cid=b.cid and
+		c.c_status in (0,3,4)
+		<if test="nickName != null and '' != nickName">
+			<![CDATA[   
+              AND a.nick_name like '%${nickName}%'   
+           ]]>
+		</if>
+		<if test="key != null and '' != key">
+			<![CDATA[   
+              AND c.description like '%${key}%' 
+           ]]>
+		</if>
+		<if test="uploadTimeQL != null and '' != uploadTimeQL">
+			<![CDATA[   
+              AND c.upload_time >=#{uploadTimeQL}
+           ]]>
+		</if>
+		<if test="uploadTimeZL != null and '' != uploadTimeZL">
+			<![CDATA[   
+              AND c.upload_time <=#{uploadTimeZL}
+           ]]>
+		</if>
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND c.c_status = #{zt}   
+           ]]>
+		</if>
+		<if test="uid != null and '' != uid">
+			<![CDATA[   
+              AND a.uid = #{uid}   
+           ]]>
+		</if>
+		<if test="tid != null and '' != tid">
+			<![CDATA[   
+              AND b.tid = #{tid}   
+           ]]>
+		</if>
+	</select>
+
+	<select id="queryContentFormsSubject"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="com.duanqu.common.vo.ManagerContentForm">
+		<include refid="contentListFromSubject" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryContentFormsSubjectCount"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="Long">
+		select count(*) from tab_content_info c,tab_user_info
+		a,tab_subject_content b where c.uid=a.uid and c.cid=b.cid and
+		c.c_status in (0,3,4)
+		<if test="nickName != null and '' != nickName">
+			<![CDATA[   
+              AND a.nick_name like '%${nickName}%'   
+           ]]>
+		</if>
+		<if test="key != null and '' != key">
+			<![CDATA[   
+              AND c.description like '%${key}%' 
+           ]]>
+		</if>
+		<if test="uploadTimeQL != null and '' != uploadTimeQL">
+			<![CDATA[   
+              AND c.upload_time >=#{uploadTimeQL}
+           ]]>
+		</if>
+		<if test="uploadTimeZL != null and '' != uploadTimeZL">
+			<![CDATA[   
+              AND c.upload_time <=#{uploadTimeZL}
+           ]]>
+		</if>
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND c.c_status = #{zt}   
+           ]]>
+		</if>
+		<if test="uid != null and '' != uid">
+			<![CDATA[   
+              AND a.uid = #{uid}   
+           ]]>
+		</if>
+		<if test="sid != null and '' != sid">
+			<![CDATA[   
+              AND b.sid = #{sid}   
+           ]]>
+		</if>
+	</select>
+
+
+	<select id="queryContentFormsCount"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="long">
+		select count(*) from tab_content_info c,tab_user_info a where
+		c.uid=a.uid and c.c_status in (0,3,4)
+		<if test="nickName != null and '' != nickName">
+			<![CDATA[   
+              AND a.nick_name like '%${nickName}%'   
+           ]]>
+		</if>
+		<if test="key != null and '' != key">
+			<![CDATA[   
+              AND c.description like '%${key}%' 
+           ]]>
+		</if>
+		<if test="uploadTimeQL != null and '' != uploadTimeQL">
+			<![CDATA[   
+              AND c.upload_time >=#{uploadTimeQL}
+           ]]>
+		</if>
+		<if test="uploadTimeZL != null and '' != uploadTimeZL">
+			<![CDATA[   
+              AND c.upload_time <=#{uploadTimeZL}
+           ]]>
+		</if>
+		<if test="isPrivate != null and '' != isPrivate">
+			<![CDATA[   
+              AND c.is_private = #{isPrivate}   
+           ]]>
+		</if>
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND c.c_status = #{zt}   
+           ]]>
+		</if>
+		<if test="uid != null and '' != uid">
+			<![CDATA[   
+              AND a.uid = #{uid}   
+           ]]>
+		</if>
+	</select>
+
+	<sql id="contentTsList">
+		select a.cid,a.thumbnails_url thumbnailsUrl,a.video_url_hd
+		videoUrlHd,a.video_url videoUrl,c.nick_name
+		nickName,a.description,b.type,FROM_UNIXTIME(SUBSTR(b.create_time,1,LENGTH(b.create_time)-3))
+		createTime from tab_content_info a,tab_editor_contentrecommend
+		b,tab_user_info c where a.cid=b.cid and a.uid=c.uid
+		<if test="key != null and '' != key">
+			<![CDATA[   
+              AND a.description like '%${key}%' 
+           ]]>
+		</if>
+		<if test="nickName != null and '' != nickName">
+			<![CDATA[   
+              AND c.nick_name like '%${nickName}%' 
+           ]]>
+		</if>
+		<if test="type != null and '' != type">
+			<![CDATA[   
+              AND b.type=#{type} 
+           ]]>
+		</if>
+		order by b.create_time desc
+	</sql>
+
+
+	<select id="queryTsContentForms"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="Map">
+		<include refid="contentTsList" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryTsContentFormsCount"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="long">
+
+		select count(*) from (
+		<include refid="contentTsList" />
+		) h
+	</select>
+
+	<sql id="contentList">
+		select c.cid,c.uid,c.video_url_hd videoUrlHd,c.video_url
+		videoUrl,c.thumbnails_url
+		thumbnailsUrl,c.description,c.upload_time
+		uploadTime,c.show_times showTimes,c.comment_num
+		commentNum,c.like_num likeNum,c.show_falsetimes falseShowTimes,
+		c.comment_falsenum falseCommentNum,c.like_falsenum
+		falseLikeNum,c.c_status cStatus,c.is_private
+		isPrivate,c.sinashare_num sinashareNum,c.sinashare_falsenum
+		sinashareFalseNum,c.quanshare_num
+		quanshareNum,c.quanshare_falsenum quanshareFalseNum,a.nick_name
+		nickName from tab_content_info c,tab_user_info a where
+		c.uid=a.uid and c.c_status in (0,3,4)
+		<if test="nickName != null and '' != nickName">
+			<![CDATA[   
+              AND a.nick_name like '%${nickName}%'   
+           ]]>
+		</if>
+		<if test="key != null and '' != key">
+			<![CDATA[   
+              AND c.description like '%${key}%' 
+           ]]>
+		</if>
+		<if test="uploadTimeQL != null and '' != uploadTimeQL">
+			<![CDATA[   
+              AND c.upload_time >=#{uploadTimeQL}
+           ]]>
+		</if>
+		<if test="uploadTimeZL != null and '' != uploadTimeZL">
+			<![CDATA[   
+              AND c.upload_time <=#{uploadTimeZL}
+           ]]>
+		</if>
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND c.c_status = #{zt}   
+           ]]>
+		</if>
+		<if test="isPrivate != null and '' != isPrivate">
+			<![CDATA[   
+              AND c.is_private = #{isPrivate}   
+           ]]>
+		</if>
+
+		<if test="uid != null and '' != uid">
+			<![CDATA[   
+              AND a.uid = #{uid}   
+           ]]>
+		</if>
+
+		<if test="pxtj == null or '' == pxtj">
+			<![CDATA[   
+              order by c.create_time desc
+           ]]>
+		</if>
+
+		<if test="pxtj =='show_times' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.show_times ASC
+           ]]>
+		</if>
+		<if test="pxtj =='show_times' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.show_times DESC
+           ]]>
+		</if>
+		<if test="pxtj =='like_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.like_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='like_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.like_num DESC
+           ]]>
+		</if>
+		<if test="pxtj =='comment_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.comment_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='comment_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.comment_num DESC
+           ]]>
+		</if>
+
+		<if test="pxtj =='sinashare_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.sinashare_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='sinashare_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.sinashare_num DESC
+           ]]>
+		</if>
+		<if test="pxtj =='quanshare_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.quanshare_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='quanshare_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.quanshare_num DESC
+           ]]>
+		</if>
+
+
+
+	</sql>
+
+	<sql id="contentListFromTag">
+		select c.cid,c.uid,c.video_url_hd videoUrlHd,c.video_url
+		videoUrl,c.thumbnails_url
+		thumbnailsUrl,c.description,c.upload_time
+		uploadTime,c.show_times showTimes,c.comment_num
+		commentNum,c.like_num likeNum,c.show_falsetimes falseShowTimes,
+		c.comment_falsenum falseCommentNum,c.like_falsenum
+		falseLikeNum,c.c_status cStatus,c.is_private
+		isPrivate,c.sinashare_num sinashareNum,c.sinashare_falsenum
+		sinashareFalseNum,c.quanshare_num
+		quanshareNum,c.quanshare_falsenum quanshareFalseNum,a.nick_name
+		nickName from tab_content_info c,tab_user_info a,tab_content_tag
+		b where c.uid=a.uid and c.cid=b.cid and c.c_status in (0,3,4)
+		<if test="nickName != null and '' != nickName">
+			<![CDATA[   
+              AND a.nick_name like '%${nickName}%'   
+           ]]>
+		</if>
+		<if test="key != null and '' != key">
+			<![CDATA[   
+              AND c.description like '%${key}%' 
+           ]]>
+		</if>
+		<if test="uploadTimeQL != null and '' != uploadTimeQL">
+			<![CDATA[   
+              AND c.upload_time >=#{uploadTimeQL}
+           ]]>
+		</if>
+		<if test="uploadTimeZL != null and '' != uploadTimeZL">
+			<![CDATA[   
+              AND c.upload_time <=#{uploadTimeZL}
+           ]]>
+		</if>
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND c.c_status = #{zt}   
+           ]]>
+		</if>
+		<if test="uid != null and '' != uid">
+			<![CDATA[   
+              AND a.uid = #{uid}   
+           ]]>
+		</if>
+		<if test="tid != null and '' != tid">
+			<![CDATA[   
+              AND b.tid = #{tid}   
+           ]]>
+		</if>
+
+		<if test="pxtj == null or '' == pxtj">
+			<![CDATA[   
+              order by c.create_time desc
+           ]]>
+		</if>
+
+		<if test="pxtj =='show_times' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.show_times ASC
+           ]]>
+		</if>
+		<if test="pxtj =='show_times' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.show_times DESC
+           ]]>
+		</if>
+		<if test="pxtj =='like_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.like_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='like_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.like_num DESC
+           ]]>
+		</if>
+		<if test="pxtj =='comment_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.comment_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='comment_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.comment_num DESC
+           ]]>
+		</if>
+
+		<if test="pxtj =='sinashare_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.sinashare_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='sinashare_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.sinashare_num DESC
+           ]]>
+		</if>
+		<if test="pxtj =='quanshare_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.quanshare_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='quanshare_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.quanshare_num DESC
+           ]]>
+		</if>
+	</sql>
+
+	<sql id="contentListFromSubject">
+		select c.cid,c.uid,c.video_url_hd videoUrlHd,c.video_url
+		videoUrl,c.thumbnails_url
+		thumbnailsUrl,c.description,c.upload_time
+		uploadTime,c.show_times showTimes,c.comment_num
+		commentNum,c.like_num likeNum,c.show_falsetimes falseShowTimes,
+		c.comment_falsenum falseCommentNum,c.like_falsenum
+		falseLikeNum,c.c_status cStatus,c.is_private
+		isPrivate,c.sinashare_num sinashareNum,c.sinashare_falsenum
+		sinashareFalseNum,c.quanshare_num
+		quanshareNum,c.quanshare_falsenum quanshareFalseNum,a.nick_name
+		nickName from tab_content_info c,tab_user_info
+		a,tab_subject_content b where c.uid=a.uid and c.cid=b.cid and
+		c.c_status in (0,3,4)
+		<if test="nickName != null and '' != nickName">
+			<![CDATA[   
+              AND a.nick_name like '%${nickName}%'   
+           ]]>
+		</if>
+		<if test="key != null and '' != key">
+			<![CDATA[   
+              AND c.description like '%${key}%' 
+           ]]>
+		</if>
+		<if test="uploadTimeQL != null and '' != uploadTimeQL">
+			<![CDATA[   
+              AND c.upload_time >=#{uploadTimeQL}
+           ]]>
+		</if>
+		<if test="uploadTimeZL != null and '' != uploadTimeZL">
+			<![CDATA[   
+              AND c.upload_time <=#{uploadTimeZL}
+           ]]>
+		</if>
+		<if test="zt != null and '' != zt">
+			<![CDATA[   
+              AND c.c_status = #{zt}   
+           ]]>
+		</if>
+		<if test="uid != null and '' != uid">
+			<![CDATA[   
+              AND a.uid = #{uid}   
+           ]]>
+		</if>
+		<if test="sid != null and '' != sid">
+			<![CDATA[   
+              AND b.sid = #{sid}   
+           ]]>
+		</if>
+
+		<if test="pxtj == null or '' == pxtj">
+			<![CDATA[   
+              order by c.create_time desc
+           ]]>
+		</if>
+
+		<if test="pxtj =='show_times' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.show_times ASC
+           ]]>
+		</if>
+		<if test="pxtj =='show_times' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.show_times DESC
+           ]]>
+		</if>
+		<if test="pxtj =='like_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.like_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='like_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.like_num DESC
+           ]]>
+		</if>
+		<if test="pxtj =='comment_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.comment_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='comment_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.comment_num DESC
+           ]]>
+		</if>
+
+		<if test="pxtj =='sinashare_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.sinashare_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='sinashare_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.sinashare_num DESC
+           ]]>
+		</if>
+		<if test="pxtj =='quanshare_num' and pxlx=='ASC'">
+			<![CDATA[   
+              ORDER BY c.quanshare_num ASC
+           ]]>
+		</if>
+		<if test="pxtj =='quanshare_num' and pxlx=='DESC'">
+			<![CDATA[   
+              ORDER BY c.quanshare_num DESC
+           ]]>
+		</if>
+	</sql>
+
+
+	<select id="queryTagModels" parameterType="long"
+		resultType="TagModel">
+		select a.tid,a.tag_text tagText,a.tag_type tagType from
+		tab_tag_info a,tab_content_tag b where a.tid=b.tid and
+		b.cid=#{cid}
+	</select>
+
+
+	<insert id="insertRecommendModel" parameterType="RecommendModel">
+		insert into tab_editor_contentrecommend
+		(cid,type,is_show,create_time,recommend)
+		values(#{cid},#{type},#{isShow},#{createTime},#{recommend})
+	</insert>
+
+	<update id="updateContent" parameterType="ContentModel">
+		update tab_content_info set c_status=#{cStatus} where cid=#{cid}
+	</update>
+
+	<select id="queryReportList"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="Map">
+		<include refid="reportList" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+
+	<select id="queryReportListCount"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="Long">
+		select count(*) from (
+		<include refid="reportList" />
+		) h
+	</select>
+
+	<sql id="reportList">
+		select m.*,n.nick_name jbrName from (select
+		a.video_url,a.video_url_hd videoUrlHd,a.thumbnails_url
+		thumbnailsUrl,a.description,a.uid bjbrId,a.cid,c.nick_name
+		bjbrName,FROM_UNIXTIME(SUBSTR(b.create_time,1,LENGTH(b.create_time)-3))
+		jbsj,b.uid jbrId ,b.id jbid from tab_content_info
+		a,tab_user_report b,tab_user_info c where a.cid=b.cid and
+		a.uid=c.uid and a.c_status=0 and not EXISTS ( select 1 from
+		tab_user_report h where h.is_check=1 and b.cid=h.cid ) order by
+		b.create_time desc) m,tab_user_info n where m.jbrId=n.uid
+	</sql>
+
+
+	<insert id="insertContentInfo" parameterType="ContentModel">
+		insert into tab_content_info (cid, title, video_url_hd,
+		video_url, play_time, thumbnails_url, description, create_time,
+		upload_time, uid, longitude, latitude, location, height, width,
+		is_show, top, `keys` ) values( #{cid}, #{title}, #{videoUrlHD},
+		#{videoUrl}, #{playTime}, #{thumbnailsUrl}, #{description},
+		#{createTime}, #{uploadTime}, #{uid}, #{longitude}, #{latilude},
+		#{location}, #{height}, #{width}, #{isShow}, #{top}, #{key} )
+	</insert>
+
+	<select id="queryUserList" resultType="long">
+		select uid from tab_user_info where role_id=4
+	</select>
+
+
+	<insert id="insertTagInfo" parameterType="TagModel"
+		useGeneratedKeys="true" keyProperty="tid">
+		insert into tab_tag_info ( tag_text ) values( #{tagText} )
+	</insert>
+
+	<select id="selectTagInfo" parameterType="java.lang.String"
+		resultMap="result_tagmodel">
+		select * from tab_tag_info where tag_text=#{substr}
+	</select>
+
+	<insert id="insertContentTag" parameterType="ContentTagModel">
+		insert into tab_content_tag (tid, cid ) values( #{tid}, #{cid} )
+	</insert>
+	<delete id="deleteRecommendModel" parameterType="Map">
+		delete from tab_editor_contentrecommend where cid=#{cid} and
+		type=#{type}
+	</delete>
+
+	<select id="selectHotContentList" resultType="Long"
+		parameterType="Map">
+		select cid from  tab_hot_contentlist ORDER BY id ASC
+		<!--  
+		SELECT m.cid from ( SELECT
+		a.cid,((IFNULL(b.todayNum,0)+IFNULL(n.todayShareNum,0))*5+IFNULL(d.like_num,0))
+		zs from (SELECT a.cid FROM tab_content_info a where
+		a.is_private=0 and a.c_status=0 and a.uid>1 and not
+		exists(select 1 from tab_set_contentlist b where a.cid=b.cid and
+		b.type=1) and not EXISTS (select 1 from
+		tab_editor_contentrecommend e where a.cid=e.cid and
+		e.recommend=1 )) a LEFT JOIN ( SELECT cid,count(*) todayNum from
+		tab_user_likecontent where
+		<![CDATA[ 
+		create_time>=#{todayTime}
+		]]>
+		GROUP BY cid) b on a.cid=b.cid LEFT JOIN ( SELECT cid,count(*)
+		todayShareNum from tab_log_sharecontent where flag=1 and
+		<![CDATA[ 
+		create_time>=#{todayTime}
+		]]>
+		GROUP BY cid ) n on a.cid=n.cid LEFT JOIN (SELECT cid,like_num
+		from tab_stat_likecontent) d on a.cid=d.cid ) m ORDER BY m.zs
+		DESC LIMIT 501
+		-->
+		<!--  
+			SELECT m.cid from ( SELECT
+			a.cid,(IFNULL(b.todayNum,0)*5+IFNULL(d.like_num,0)+(a.sinashare_num+a.sinashare_falsenum+a.quanshare_num+a.quanshare_falsenum))
+			zs from (SELECT
+			a.cid,a.sinashare_num,a.sinashare_falsenum,a.quanshare_num,a.quanshare_falsenum
+			FROM tab_content_info a where a.is_private=0 and a.c_status=0
+			and a.uid>1 and not exists(select 1 from tab_set_contentlist b where a.cid=b.cid)) a LEFT JOIN (SELECT cid,count(*) todayNum from
+			tab_user_likecontent
+			where <![CDATA[ 
+			create_time>=#{todayTime} 
+			]]>
+			GROUP BY cid) b on a.cid=b.cid LEFT
+			JOIN (SELECT cid,like_num from tab_stat_likecontent) d on a.cid=d.cid ) m
+			ORDER BY m.zs DESC LIMIT 501
+		-->
+		<!-- SELECT cid FROM( SELECT cid,( <![CDATA[ CASE WHEN create_time>=#{todayTime} 
+			then (like_num+like_falsenum)*8 WHEN create_time>=#{yesterdayTime} and create_time<#{todayTime} 
+			then (like_num+like_falsenum)*5 WHEN create_time>=#{afterTime} and create_time<#{yesterdayTime} 
+			then (like_num+like_falsenum)*3 ELSE (like_num+like_falsenum) END ]]> ) xhs 
+			from tab_content_info a where a.is_private=0 and a.c_status=0 and a.uid>1 
+			and not exists(select 1 from tab_set_contentlist b where a.cid=b.cid) ) m 
+			ORDER BY m.xhs DESC LIMIT 501 -->
+		<!-- SELECT m.cid from ( SELECT a.cid,(IFNULL(b.todayNum,0)*8+IFNULL(d.like_num,0)) 
+			zs from (SELECT a.cid FROM tab_content_info a where a.is_private=0 and a.c_status=0 
+			and a.uid>1) a LEFT JOIN (SELECT cid,count(*) todayNum from tab_user_likecontent 
+			where <![CDATA[ create_time>=#{time} ]]> GROUP BY cid) b on a.cid=b.cid LEFT 
+			JOIN (SELECT cid,like_num from tab_stat_likecontent) d on a.cid=d.cid ) m 
+			ORDER BY m.zs DESC LIMIT 501 select m.cid from (select a.cid,(IFNULL(b.zfzs,0)*0.3+IFNULL(c.xhzs,0)*0.3+IFNULL(e.plzs,0)*0.4) 
+			zs from tab_content_info a LEFT JOIN ( select cid,count(*) zfzs from tab_user_forwardcontent 
+			where <![CDATA[ create_time>=#{time} ]]> GROUP BY cid ) b ON a.cid=b.cid 
+			LEFT JOIN( select cid,count(*) xhzs from tab_user_likecontent where <![CDATA[ 
+			create_time>=#{time} GROUP BY cid ) c ON a.cid=c.cid LEFT JOIN( select cid,count(*) 
+			plzs from tab_content_comment where <![CDATA[ create_time>=#{time} ]]> GROUP 
+			BY cid ) e on a.cid=e.cid where a.is_private=0 and a.c_status=0 and a.uid 
+			> 1) m ORDER BY m.zs DESC LIMIT 200; -->
+	</select>
+	<!-- <select id="selectHotContentList" resultType="Long"> select a.cid from 
+		(select cid,((comment_num+comment_falsenum)*0.4+(like_num+like_falsenum)*0.3+(forward_num+forward_falsenum)*0.3) 
+		as countNum from tab_content_info where is_private=0 and c_status=0 ) a ORDER 
+		BY a.countNum desc LIMIT 0,200; </select> -->
+
+
+	<select id="selectHotContentListNew" resultType="ResultHot"
+		parameterType="Map">
+		SELECT m.cid,m.uid,m.zs from ( SELECT
+		a.cid,a.uid,a.upload_time,((IFNULL(b.todayNum,0)+IFNULL(n.todayShareNum,0))*5+IFNULL(d.like_num,0))
+		zs from (SELECT a.cid,a.uid,a.upload_time FROM tab_content_info
+		a where a.is_private=0 and a.c_status=0 and a.uid>1 and not
+		exists(select 1 from tab_set_contentlist b where a.cid=b.cid and
+		b.type=1) and not EXISTS (select 1 from
+		tab_editor_contentrecommend e where a.cid=e.cid and
+		e.recommend=1 )) a LEFT JOIN ( SELECT cid,count(*) todayNum from
+		tab_user_likecontent where create_time>=1378712977671 GROUP BY
+		cid) b on a.cid=b.cid LEFT JOIN ( SELECT cid,count(*)
+		todayShareNum from tab_log_sharecontent where flag=1 and
+		create_time>=1378712977671 GROUP BY cid ) n on a.cid=n.cid LEFT
+		JOIN (SELECT cid,like_num from tab_stat_likecontent) d on
+		a.cid=d.cid ) m ORDER BY m.zs DESC,m.upload_time DESC LIMIT 504
+	</select>
+
+	<select id="selectNewAllHotContentList" resultType="long">
+		SELECT a.cid FROM tab_content_info a where a.is_private=0 and
+		a.c_status=0 and a.uid>1 and not exists(select 1 from
+		tab_set_contentlist b where a.cid=b.cid and b.type=2) and not
+		EXISTS (select 1 from tab_editor_contentrecommend e where
+		a.cid=e.cid and e.recommend=1 ) ORDER BY
+		(show_times+show_falsetimes) DESC LIMIT 100
+	</select>
+
+	<select id="selectNewWeekHotContentList" resultType="long"
+		parameterType="long">
+
+		SELECT y.cid from ( SELECT a.cid,a.upload_time,(
+		(IFNULL(m.todayLike,0)+IFNULL(n.todayForward,0)+IFNULL(x.todayShare,0))*3+(IFNULL(m.thirdLike,0)+IFNULL(n.thirdForward,0)+IFNULL(x.thirdShare,0))*2+(IFNULL(m.serventhLike,0)+IFNULL(n.serventhForward,0)+IFNULL(x.serventhShare,0)))
+		zs from (SELECT a.cid,a.upload_time FROM tab_content_info_temp a
+		where a.is_private=0 and a.c_status=0 and a.uid>1 and
+		<![CDATA[ 
+		  a.serventhTime>#{time}
+		  ]]>
+		and not exists(select 1 from tab_set_contentlist b where
+		a.cid=b.cid and b.type=2) and not EXISTS (select 1 from
+		tab_editor_contentrecommend e where a.cid=e.cid and
+		e.recommend=1 )) a LEFT JOIN( select a.cid,
+		<![CDATA[ 
+        sum(IF(a.create_time<b.firstTime,1,0)) todayLike,
+        sum(IF(b.firstTime<a.create_time<b.thirdTime,1,0)) thirdLike,            
+        sum(IF(b.thirdTime<a.create_time<b.serventhTime,1,0)) serventhLike
+        ]]>
+		from tab_user_likecontent a,tab_content_info_temp b where
+		a.cid=b.cid and
+		<![CDATA[ 
+		  b.serventhTime>#{time}
+		  ]]>
+
+		GROUP BY a.cid) m ON a.cid=m.cid LEFT JOIN( select a.cid,
+		<![CDATA[ 
+        sum(IF(a.create_time<b.firstTime,1,0)) todayForward,
+        sum(IF(b.firstTime<a.create_time<b.thirdTime,1,0)) thirdForward,            
+        sum(IF(b.thirdTime<a.create_time<b.serventhTime,1,0)) serventhForward
+         ]]>
+		from tab_user_forwardcontent a,tab_content_info_temp b where
+		a.cid=b.cid and
+		<![CDATA[ 
+		  b.serventhTime>#{time}
+		  ]]>
+		GROUP BY a.cid) n ON a.cid=n.cid LEFT JOIN( select a.cid,
+		<![CDATA[ 
+        sum(IF(a.create_time<b.firstTime,1,0)) todayShare,
+        sum(IF(b.firstTime<a.create_time<b.thirdTime,1,0)) thirdShare,            
+        sum(IF(b.thirdTime<a.create_time<b.serventhTime,1,0)) serventhShare
+        ]]>
+		from tab_log_sharecontent a,tab_content_info_temp b where
+		a.cid=b.cid and a.flag=1 and
+
+		<![CDATA[ 
+		  b.serventhTime>#{time}
+		  ]]>
+		GROUP BY a.cid) x ON a.cid=x.cid ) y ORDER BY y.zs
+		DESC,y.upload_time ASC LIMIT 100
+	</select>
+
+
+
+	<select id="selectContentModels" resultType="ContentModel"
+		parameterType="Long">
+		select c.cid,c.uid,c.video_url_hd videoUrlHd,c.video_url
+		videoUrl,c.thumbnails_url
+		thumbnailsUrl,c.description,c.upload_time
+		uploadTime,c.show_times showTimes,c.comment_num
+		commentNum,c.like_num likeNum,c.show_falsetimes falseShowTimes,
+		c.comment_falsenum falseCommentNum,c.like_falsenum
+		falseLikeNum,c.forward_num forwardNum,c.forward_falsenum
+		falseForwardNum, c.c_status cStatus,c.title,c.play_time
+		playTime,c.width,c.height,c.longitude,c.latitude,c.location,c.top,c.`keys`
+		as `key` from tab_content_info c where c.c_status!=2 and
+		c.is_show=0
+		<![CDATA[   
+		and c.upload_time<=#{uploadTime}
+		]]>
+	</select>
+
+	<update id="updateContentShow" parameterType="Long">
+		update tab_content_info set is_show=1 where cid=#{cid}
+	</update>
+
+	<update id="updateReport" parameterType="Long">
+		update tab_user_report set is_check =1 where id=#{jbid}
+	</update>
+	<select id="queryReList" parameterType="Long"
+		resultType="RecommendModel">
+		<![CDATA[
+	   select cid,type,recommend from tab_editor_contentrecommend where is_show=1 and create_time <=#{createTime}
+	]]>
+	</select>
+
+	<update id="updateRecommendShow" parameterType="RecommendModel">
+
+		update tab_editor_contentrecommend set is_show=0 where
+		cid=#{cid} and type=#{type}
+	</update>
+
+	<select id="getRecommendModel" parameterType="RecommendModel"
+		resultType="RecommendModel">
+		select cid,type from tab_editor_contentrecommend where
+		cid=#{cid} and type=#{type}
+	</select>
+
+	<update id="updateRecommendCreateTime"
+		parameterType="RecommendModel">
+		update tab_editor_contentrecommend set create_time=#{createTime}
+		where cid=#{cid} and type=#{type}
+	</update>
+
+
+	<select id="queryContentFormsDqj"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="com.duanqu.common.vo.ManagerContentForm">
+		<include refid="contentDqjList" />
+		limit #{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryContentFormsDqjCount"
+		parameterType="com.duanqu.common.submit.MContentSubmit"
+		resultType="long">
+		select count(*) from (
+		<include refid="contentDqjList" />
+		) h
+	</select>
+
+	<sql id="contentDqjList">
+		select b.*,IFNULL(m.xpls,0) xpls,m.maxcreatetime from ( select
+		cid,uid,thumbnails_url thumbnailsUrl,video_url_hd
+		videoUrlHd,description,create_time uploadTime,show_times
+		showTimes,show_falsetimes falseShowTimes,like_num likeNum
+		,like_falsenum falseLikeNum,forward_num
+		forwardNum,forward_falsenum falseForwardNum ,comment_num
+		commentNum,comment_falsenum falseCommentNum from
+		tab_content_info where uid=1 and c_status=0 ) b LEFT JOIN (
+		select cid,count(*) xpls,max(a.create_time) maxcreatetime from
+		tab_content_comment a where a.is_new=1 and (a.root_id=0 or
+		a.reply_uid=1) group by a.cid ) m on b.cid=m.cid where 1=1
+		<if test="key != null and '' != key">
+			<![CDATA[   
+              AND b.description like '%${key}%' 
+           ]]>
+		</if>
+		ORDER BY m.maxcreatetime DESC,b.uploadTime Desc
+	</sql>
+
+	<update id="updateContentShowTimes" parameterType="Map">
+		update tab_content_info set show_times=#{st} where cid=#{cid}
+	</update>
+
+	<update id="updateContentFalseShowTimes" parameterType="Map">
+		update tab_content_info set
+		show_falsetimes=show_falsetimes+#{num} where cid=#{cid}
+	</update>
+
+	<update id="insertContentDescription" parameterType="Map">
+		update tab_content_info set
+		description=CONCAT(description,#{text}) where cid=#{cid}
+	</update>
+
+	<update id="updateContentDescription"
+		parameterType="ContentModel">
+		update tab_content_info set description=#{description} where
+		cid=#{cid}
+	</update>
+
+	<select id="getContentModel" parameterType="Long"
+		resultType="ContentModel">
+		select cid,description from tab_content_info where cid=#{cid}
+	</select>
+
+	<select id="getContentSinaQuan" parameterType="Long"
+		resultType="Map">
+		select c.sinashare_num sinashareNum,c.sinashare_falsenum
+		sinashareFalseNum,c.quanshare_num
+		quanshareNum,c.quanshare_falsenum quanshareFalseNum,c.show_times
+		showTimes,c.show_falsetimes showFalseTimes from tab_content_info
+		c where c.cid=#{cid}
+	</select>
+
+	<update id="updateContentSinaNum" parameterType="Map">
+		update tab_content_info set
+		sinashare_falsenum=sinashare_falsenum+#{num} where cid=#{cid}
+	</update>
+
+	<update id="updateContentQuanNum" parameterType="Map">
+		update tab_content_info set
+		quanshare_falsenum=quanshare_falsenum+#{num} where cid=#{cid}
+	</update>
+
+	<select id="getSetContentList" parameterType="Map"
+		resultType="Map">
+		select * from tab_set_contentlist where cid=#{cid} and
+		type=#{type}
+	</select>
+
+	<insert id="insertSetContent" parameterType="SetContentModel">
+		insert into tab_set_contentlist(cid,order_num,type,create_time)
+		values(#{cid},#{orderNum},#{type},#{createTime})
+	</insert>
+
+	<select id="querySetContentModels" resultType="SetContentModel">
+		select a.cid,b.uid,a.order_num orderNum,a.create_time createTime from
+		tab_set_contentlist a,tab_content_info b where a.cid=b.cid and
+		b.c_status=0 and b.is_private=0 and a.type=1 order by order_num
+		asc
+	</select>
+
+	<select id="queryNewSetContentModels"
+		resultType="SetContentModel">
+		select a.cid,a.order_num orderNum,a.create_time createTime from
+		tab_set_contentlist a,tab_content_info b where a.cid=b.cid and
+		b.c_status=0 and b.is_private=0 and a.type=2 order by order_num
+		asc
+	</select>
+
+	<update id="updateSetContent" parameterType="SetContentModel">
+		update tab_set_contentlist set order_num=#{orderNum} where
+		type=#{type} and cid=#{cid}
+	</update>
+
+	<select id="getSetContentModel" parameterType="Map"
+		resultType="SetContentModel">
+		select cid,order_num orderNum,create_time createTime from
+		tab_set_contentlist where cid=#{cid} and type=#{type}
+	</select>
+
+	<select id="queryTsHotContentList" resultType="Map"
+		parameterType="com.duanqu.common.submit.MContentSubmit">
+		SELECT a.cid,a.order_num,type,FROM_UNIXTIME(a.create_time/1000)
+		createTime,b.description,b.video_url_hd
+		videoUrlHd,b.thumbnails_url thumbnailsUrl,c.nick_name nickName
+		from tab_set_contentlist a,tab_content_info b,tab_user_info c
+		where a.cid=b.cid and b.uid=c.uid and b.c_status=0 and
+		b.is_private=0 ORDER BY a.create_time DESC limit
+		#{pageStart},#{pageSize}
+	</select>
+
+	<select id="queryTsHotContentListCount" resultType="Long"
+		parameterType="com.duanqu.common.submit.MContentSubmit">
+		select count(*) from tab_set_contentlist a,tab_content_info
+		b,tab_user_info c where a.cid=b.cid and b.uid=c.uid and
+		b.c_status=0 and b.is_private=0
+	</select>
+
+	<delete id="deleteTsHotContent" parameterType="Map">
+		delete from tab_set_contentlist where cid=#{cid} and
+		type=#{type}
+	</delete>
+
+	<select id="queryPublishUserList" resultType="Map">
+		select a.uid,b.nick_name from tab_editor_userrecommend
+		a,tab_user_info b where a.uid=b.uid and a.type=2
+	</select>
+
+
+	<select id="getForwardContentModel" resultType="ForwardContentModel"
+		parameterType="Map">
+
+		select id,uid,cid,create_time createTime from
+		tab_user_forwardcontent where uid=#{uid} and cid=#{cid}
+	</select>
+
+
+	<insert id="insertForwardContentModel"
+		parameterType="ForwardContentModel">
+		insert into tab_user_forwardcontent (uid,cid,create_time)
+		values(#{uid},#{cid},#{createTime})
+	</insert>
+
+	<update id="updateContentForwardNum" parameterType="Map">
+		update tab_content_info set forward_num=forward_num+#{num} where
+		cid=#{cid}
+	</update>
+	
+	<select id="totalHotContent" statementType="CALLABLE" resultType="long">
+		<![CDATA[
+          {call Proc_hot_content()}  
+        ]]>
+	</select>
+
+
+
+
+
+
+</mapper>
